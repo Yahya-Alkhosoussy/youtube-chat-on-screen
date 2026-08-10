@@ -77,14 +77,17 @@
     <property name="title">
      <string>Settings</string>
     </property>
-    <addaction name="actionGeneral_Settings"/>
+    <addaction name="actionPrefrences"/>
    </widget>
    <addaction name="menuSettings"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
-  <action name="actionGeneral_Settings">
+  <action name="actionPrefrences">
    <property name="text">
-    <string>General Settings</string>
+    <string>Preferences</string>
+   </property>
+   <property name="toolTip">
+    <string>Preferences</string>
    </property>
   </action>
  </widget>
