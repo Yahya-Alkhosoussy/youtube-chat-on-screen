@@ -12,6 +12,11 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
 
+    QScreen *screen = QGuiApplication::primaryScreen();
+    QRect available = screen->availableGeometry();
+    resize(width(), available.height());
+    move(x(), available.top());
+
     if (DEBUG)
     { 
         addMessage("First message"); 
