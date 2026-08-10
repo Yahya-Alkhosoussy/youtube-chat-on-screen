@@ -19,5 +19,8 @@ public:
 
 private:
     Ui::MainWindow *ui;
+
+    void addMessage(const QString &text); // to add a message on the display
+    // helpful comment right? lol
 };
 #endif // MAINWINDOW_H
