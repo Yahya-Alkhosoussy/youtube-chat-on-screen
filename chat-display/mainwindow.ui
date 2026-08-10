@@ -77,10 +77,16 @@
     <property name="title">
      <string>Settings</string>
     </property>
+    <addaction name="actionGeneral_Settings"/>
    </widget>
    <addaction name="menuSettings"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
+  <action name="actionGeneral_Settings">
+   <property name="text">
+    <string>General Settings</string>
+   </property>
+  </action>
  </widget>
  <resources/>
  <connections/>
