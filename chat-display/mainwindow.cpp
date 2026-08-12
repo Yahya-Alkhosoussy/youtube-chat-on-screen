@@ -2,6 +2,7 @@
 #include "ui_mainwindow.h"
 #include <QLabel>
 #include <QTimer>
+#include <QScreen>
 #include <QScrollBar>
 
 #define DEBUG true
