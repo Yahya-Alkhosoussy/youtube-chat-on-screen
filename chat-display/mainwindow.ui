@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>470</width>
-    <height>600</height>
+    <height>444</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -35,7 +35,7 @@
          <x>0</x>
          <y>0</y>
          <width>444</width>
-         <height>514</height>
+         <height>358</height>
         </rect>
        </property>
        <property name="styleSheet">
@@ -73,21 +73,37 @@
      <height>33</height>
     </rect>
    </property>
+   <property name="styleSheet">
+    <string notr="true">background: transparent;</string>
+   </property>
    <widget class="QMenu" name="menuSettings">
     <property name="title">
      <string>Settings</string>
     </property>
+    <addaction name="actionExit"/>
     <addaction name="actionPrefrences"/>
    </widget>
    <addaction name="menuSettings"/>
   </widget>
-  <widget class="QStatusBar" name="statusbar"/>
+  <widget class="QStatusBar" name="statusbar">
+   <property name="styleSheet">
+    <string notr="true">background: transparent;</string>
+   </property>
+  </widget>
   <action name="actionPrefrences">
    <property name="text">
     <string>Preferences</string>
    </property>
    <property name="toolTip">
     <string>Preferences</string>
+   </property>
+  </action>
+  <action name="actionExit">
+   <property name="text">
+    <string>Exit</string>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::MenuRole::NoRole</enum>
    </property>
   </action>
  </widget>
