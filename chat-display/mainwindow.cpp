@@ -1,9 +1,11 @@
 #include "mainwindow.h"
+#include "preferences.h"
 #include "ui_mainwindow.h"
 #include <QLabel>
 #include <QTimer>
 #include <QScreen>
 #include <QScrollBar>
+#include <string>
 
 #define DEBUG true
 
@@ -13,6 +15,15 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
 
+    setAttribute(Qt::WA_TranslucentBackground);
+    setWindowFlags(windowFlags() | Qt::FramelessWindowHint);
+
+    connect(ui->actionExit, &QAction::triggered, this, &QMainWindow::close);
+    connect(ui->actionPrefrences, &QAction::triggered, this, [this]() {
+        preferences dialog(this);
+        dialog.exec();
+    });
+
     QScreen *screen = QGuiApplication::primaryScreen();
     QRect available = screen->availableGeometry();
     resize(width(), available.height());
@@ -21,9 +32,12 @@ MainWindow::MainWindow(QWidget *parent)
     if (DEBUG)
     { 
         addMessage("First message"); 
-        QTimer::singleShot(1000, this, [this]() {
-            addMessage("Second message");
-        });
+
+        for (int i = 0; i < 25; i++) {
+            QTimer::singleShot(250, this, [this]() {
+                addMessage("message");
+            });
+        }
     }
 }
 
