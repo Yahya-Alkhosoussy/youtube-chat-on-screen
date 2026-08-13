@@ -19,6 +19,12 @@ public:
     bool getTransparency();
     QColor getTextColour();
     int getFontSize();
+    int getRValue();
+    int getGValue();
+    int getBValue();
+    int getAValue();
+
+    QString getColourName();
 
 private:
     Ui::preferences *ui;
