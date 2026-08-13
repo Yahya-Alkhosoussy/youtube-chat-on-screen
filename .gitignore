@@ -1,7 +1,10 @@
 # Vscode stuff
 .vscode/
+secrets/
+
 # Prerequisites
 *.d
+.DS_Store
 
 # Compiled Object files
 *.slo
