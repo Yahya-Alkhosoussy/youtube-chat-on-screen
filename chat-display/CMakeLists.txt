@@ -5,6 +5,9 @@ find_package(Qt6 6.5 REQUIRED COMPONENTS Core Widgets)
 
 qt_standard_project_setup()
 
+find_package(Python3 COMPONENTS Interpreter Development REQUIRED)
+find_package(pybind11 CONFIG REQUIRED)
+
 qt_add_executable(chat-display
     WIN32 MACOSX_BUNDLE
     main.cpp
@@ -20,6 +23,7 @@ target_link_libraries(chat-display
     PRIVATE
         Qt::Core
         Qt::Widgets
+        pybind11::embed
 )
 
 install(TARGETS chat-display
