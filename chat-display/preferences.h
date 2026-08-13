@@ -16,9 +16,9 @@ public:
     explicit preferences(QWidget *parent = nullptr);
     ~preferences();
 
-    bool toggleTransparency();
-    QColor changeTextColour();
-    int changeFontSize();
+    bool getTransparency();
+    QColor getTextColour();
+    int getFontSize();
 
 private:
     Ui::preferences *ui;

@@ -14,15 +14,15 @@ preferences::preferences(QWidget *parent)
     ui->colourComboBox->setCurrentText(settings.value("preference/TextColour", "white").toString());
 }
 
-int preferences::changeFontSize() {
+int preferences::getFontSize() {
     return ui->FontSizeSpinBox->value();
 }
 
-QColor preferences::changeTextColour() {
+QColor preferences::getTextColour() {
     return QColor(ui->colourComboBox->currentText());
 }
 
-bool preferences::toggleTransparency() {
+bool preferences::getTransparency() {
     return ui->TransparentCheckBox->isChecked();
 }
 
