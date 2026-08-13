@@ -9,8 +9,11 @@ qt_add_executable(chat-display
     WIN32 MACOSX_BUNDLE
     main.cpp
     mainwindow.cpp
+    preferences.cpp
     mainwindow.h
+    preferences.h
     mainwindow.ui
+    preferences.ui
 )
 
 target_link_libraries(chat-display
