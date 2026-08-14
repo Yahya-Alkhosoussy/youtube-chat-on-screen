@@ -106,8 +106,7 @@ def fetch_chat_msg(live_chat_id: str, next_page_token: str | None = None):
         messages = parsed_response.items
 
         # Return structured data back to C++
-        return json.dumps(
-            {
+        return {
                 "pollingIntervalMillis": parsed_response.pollingIntervalMillis,
                 "nextPageToken": parsed_response.next_page_token,
                 "messages": [
@@ -118,10 +117,8 @@ def fetch_chat_msg(live_chat_id: str, next_page_token: str | None = None):
                     for msg in messages
                 ]
             }
-        )
-
     except Exception as e: # noqa
-        return json.dumps({"error": str(e)})
+        raise RuntimeError("Something went wrong")
 
 def catch_data():
     data = {"author": "User1", "message": "Hello from Python!"}
