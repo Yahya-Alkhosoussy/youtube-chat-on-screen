@@ -131,12 +131,10 @@ def print_stream_url():
     else:
         print("No active broadcast found.")
 
-
-get_authenticated_service()
-
 if __name__ == "__main__":
     import time
     try:
+        get_authenticated_service()
         print("Starting to listen")
         print_stream_url()
         next_page_token = None
