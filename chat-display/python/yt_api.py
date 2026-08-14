@@ -49,6 +49,21 @@ def get_authenticated_service():
     # Build and return the YouTube API client object
     youtube = build('youtube', 'v3', credentials=creds)
 
+def initialize_auth():
+    """Explicit startup entry point — call once from C++ before showing the main window."""
+    get_authenticated_service()
+    return True
+
+
+def has_cached_credentials():
+    """Lets C++ check if a browser prompt is actually needed before showing the dialog."""
+    script_dir = Path(__file__).parent / "secrets"
+    token_path = os.path.join(script_dir, "token.json")
+    if not os.path.exists(token_path):
+        return False
+    creds = Credentials.from_authorized_user_file(token_path, SCOPES)
+    return creds is not None and (creds.valid or (creds.expired and creds.refresh_token))
+
 def get_data():
     if youtube is None:
         raise ValueError("Youtube is set to None")
