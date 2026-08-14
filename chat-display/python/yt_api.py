@@ -84,7 +84,7 @@ def get_data():
             raise ValueError("Stream not found")
 
     except Exception as e: #noqa
-        return f"Python API Error: {str(e)}" #noqa
+        raise ValueError(f"Coult not fetch. {e}")
 
 def fetch_chat_msg(live_chat_id: str, next_page_token: str | None = None):
     """
