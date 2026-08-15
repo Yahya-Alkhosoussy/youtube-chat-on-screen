@@ -9,11 +9,13 @@ namespace py = pybind11;
 struct ChatMessage {
     QString author;
     QString message;
+    QString id;
 
     static ChatMessage FromPyDict(const py::dict& dict) {
         ChatMessage msg;
         msg.author = QString::fromStdString(dict["author"].cast<std::string>());
         msg.message = QString::fromStdString(dict["message"].cast<std::string>());
+        msg.id = QString::fromStdString(dict["id"].cast<std::string>());
         return msg;
     }
 };
