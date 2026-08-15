@@ -19,7 +19,10 @@ int main(int argc, char *argv[])
     try {
         // Add the current directory to Python's path so it can find your script
         py::module_ sys = py::module_::import("sys");
+        qDebug() << "Embedded Python version:" << QString::fromStdString(sys.attr("version").cast<std::string>());
+        qDebug() << "Embedded Python executable:" << QString::fromStdString(sys.attr("executable").cast<std::string>());
         sys.attr("path").attr("append")("/Users/yahyaamr/Documents/GitHub/youtube-chat-on-screen/chat-display/python");
+        sys.attr("path").attr("append")("/Users/yahyaamr/Documents/GitHub/youtube-chat-on-screen/.venv/lib/python3.12/site-packages");
 
         py::module_ yt_api = py::module_::import("yt_api");
 
@@ -48,19 +51,18 @@ int main(int argc, char *argv[])
                 yt_api.attr("initialize_auth")();
             } catch (const py::error_already_set &e) {
                 QMessageBox::critical(nullptr, "Authentication Failed",
-                                    QString("Could not authenticate with YouTube:\n%1").arg(e.what()));
+                    QString("Could not authenticate with YouTube:\n%1").arg(e.what())
+                );
+                
                 return 1;
             }
+        } else {
+            yt_api.attr("get_authenticated_service")();
         }
-
-        py::object result = yt_api.attr("catch_data")();
-
-        std::string cpp_result = result.cast<std::string>();
-
-        qDebug() << "Test from python: " << cpp_result;
 
     } catch (py::error_already_set& e) {
         qDebug() << "Got an error from python! Error: " << e.what();
+        return 1;
     }
     MainWindow w;
     w.show();
