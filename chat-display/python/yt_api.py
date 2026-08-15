@@ -152,16 +152,8 @@ if __name__ == "__main__":
         next_page_token = None
         while True:
             # Call your function
-            raw_response = fetch_chat_msg(get_data(), next_page_token)
+            data = fetch_chat_msg(get_data(), next_page_token)
 
-            data = json.loads(raw_response)
-
-            if "error" in data:
-                print(f"API Error: {data['error']}")
-                break
-
-            # Print incoming messages
-            print(data)
             for msg in data.get("messages", []):
                 print(f"[{msg['author']}]: {msg['message']}")
 
