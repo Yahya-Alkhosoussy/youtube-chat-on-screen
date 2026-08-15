@@ -62,7 +62,7 @@ def has_cached_credentials():
     if not os.path.exists(token_path):
         return False
     creds = Credentials.from_authorized_user_file(token_path, SCOPES)
-    return creds is not None and (creds.valid or (creds.expired and creds.refresh_token))
+    return bool(creds is not None and (creds.valid or (creds.expired and creds.refresh_token)))
 
 def get_data():
     if youtube is None:
