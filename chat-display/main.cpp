@@ -66,5 +66,7 @@ int main(int argc, char *argv[])
     }
     MainWindow w;
     w.show();
+    py::gil_scoped_release release;
+    
     return QApplication::exec();
 }
