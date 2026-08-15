@@ -3,6 +3,7 @@
 
 #include <QColor>
 #include <QMainWindow>
+#include <QQueue>
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -23,6 +24,8 @@ private:
     };
     QTimer* _poll_timer;
     QString next_page_token;
+    QQueue<QString> messageIdOrder;
+    static constexpr int MAX_IDS_STORED = 500;
 
 public:
     explicit MainWindow(QWidget *parent = nullptr);
