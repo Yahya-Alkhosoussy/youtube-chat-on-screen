@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.19)
 project(chat-display LANGUAGES CXX)
 
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 find_package(Qt6 6.5 REQUIRED COMPONENTS Core Widgets)
 
 qt_standard_project_setup()
@@ -17,9 +19,10 @@ qt_add_executable(chat-display
     mainwindow.h
     preferences.h
     ChatResponse.h
+    ChatWorker.h
     mainwindow.ui
     preferences.ui
-    ChatWorker.h
+    ChatWorker.cpp
 )
 
 target_link_libraries(chat-display
