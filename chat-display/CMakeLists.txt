@@ -19,6 +19,7 @@ qt_add_executable(chat-display
     ChatResponse.h
     mainwindow.ui
     preferences.ui
+    ChatWorker.h
 )
 
 target_link_libraries(chat-display
