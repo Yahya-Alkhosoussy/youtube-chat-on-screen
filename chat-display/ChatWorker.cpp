@@ -16,7 +16,8 @@ namespace {
     static ChatResponse parseChatResponse(const py::dict& d) {
         ChatResponse resp;
         resp.pollingIntervalMillis = d["pollingIntervalMillis"].cast<int>();
-        resp.nextPageToken = QString::fromStdString(d["nextPageToken"].cast<std::string>());
+        py::object tokenObj = d["nextPageToken"];
+        if (!tokenObj.is_none()) resp.nextPageToken = QString::fromStdString(tokenObj.cast<std::string>());
 
         for (const py::handle& item : d["messages"].cast<py::list>()) {
             resp.messages.append(parseChatMessage(item.cast<py::dict>()));
@@ -48,7 +49,7 @@ void ChatWorker::poll() {
 
 
         // Add the current directory to Python's path so it can find your script
-            py::module_ sys = py::module_::import("sys");
+        py::module_ sys = py::module_::import("sys");
         sys.attr("path").attr("append")("/Users/yahyaamr/Documents/GitHub/youtube-chat-on-screen/chat-display/python");
 
         py::module_ yt_api = py::module_::import("yt_api");
