@@ -160,6 +160,12 @@ int MainWindow::poll_for_messages() {
         ChatResponse response = ChatResponse::FromPyDict(messages.cast<py::dict>());
     
         for (auto message : response.messages) {
+            if (seen_messages.contains(message.id)) continue; // the message was seen, do not add it.
+
+            seen_messages.insert(message.id);
+            messageIdOrder.enqueue(message.id);
+            if (messageIdOrder.size() > MAX_IDS_STORED) seen_messages.remove(messageIdOrder.dequeue()); // forcefully removes the first message from the queue.
+
             addMessage(QString(message.author) + QString(": ") + QString(message.message));
         }
         next_page_token = response.nextPageToken;
