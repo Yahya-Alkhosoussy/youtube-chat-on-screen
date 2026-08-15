@@ -1,5 +1,5 @@
 <RCC>
     <qresource prefix="/sounds">
-        <file>WHO.mp3</file>
+        <file>WHO.wav</file>
     </qresource>
 </RCC>
