@@ -4,6 +4,8 @@
 #include <QColor>
 #include <QMainWindow>
 #include <QQueue>
+#include <QThread>
+#include "ChatWorker.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -27,6 +29,8 @@ private:
     QQueue<QString> messageIdOrder;
     QSet<QString> seen_messages;
     static constexpr int MAX_IDS_STORED = 500;
+    QThread worker_thread;
+    ChatWorker* worker = nullptr;
 
 public:
     explicit MainWindow(QWidget *parent = nullptr);
@@ -38,7 +42,9 @@ private:
     void addMessage(const QString &text); // to add a message on the display
     // helpful comment right? lol
     void applySettingsChanges(int fontSize, QColor colour, bool transparent, RGBA backgroundColor);
-    void start_poll_timer();
-    int poll_for_messages();
+
+private slots:
+    void onMessageFetched(ChatResponse resp);
+    void onErrorOccurred(QString error);
 };
 #endif // MAINWINDOW_H
