@@ -111,6 +111,7 @@ def fetch_chat_msg(live_chat_id: str, next_page_token: str | None = None):
                 "nextPageToken": parsed_response.next_page_token,
                 "messages": [
                     {
+                        "id": msg.id,
                         "author": msg.authorDetails.displayName if msg.authorDetails else "Unknown",
                         "message": msg.snippet.displayMessage or ""
                     }
