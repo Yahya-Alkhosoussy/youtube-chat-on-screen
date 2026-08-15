@@ -5,6 +5,7 @@ find_package(Qt6 6.5 REQUIRED COMPONENTS Core Widgets)
 
 qt_standard_project_setup()
 
+set(Python3_ROOT_DIR "/Users/yahyaamr/Documents/GitHub/youtube-chat-on-screen/.venv")
 find_package(Python3 COMPONENTS Interpreter Development REQUIRED)
 find_package(pybind11 CONFIG REQUIRED)
 
@@ -15,6 +16,7 @@ qt_add_executable(chat-display
     preferences.cpp
     mainwindow.h
     preferences.h
+    ChatResponse.h
     mainwindow.ui
     preferences.ui
 )
