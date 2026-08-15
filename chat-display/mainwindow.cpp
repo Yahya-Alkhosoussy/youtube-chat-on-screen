@@ -12,7 +12,7 @@
 #include <QMessageBox>
 #include <string>
 
-#define DEBUG true
+#define DEBUG false
 
 namespace py = pybind11;
 
