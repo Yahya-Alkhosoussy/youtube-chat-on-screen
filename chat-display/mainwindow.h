@@ -25,6 +25,7 @@ private:
     QTimer* _poll_timer;
     QString next_page_token;
     QQueue<QString> messageIdOrder;
+    QSet<QString> seen_messages;
     static constexpr int MAX_IDS_STORED = 500;
 
 public:
