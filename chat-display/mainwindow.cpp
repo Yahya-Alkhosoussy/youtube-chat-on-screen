@@ -110,6 +110,7 @@ MainWindow::~MainWindow()
 void MainWindow::addMessage(const QString &text) {
     auto *label = new QLabel(text, ui->layout_messages);
     label->setWordWrap(true);
+    label->setMaximumWidth(420);
     label->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
     QString style = QString("background: rgba(0, 0, 0, 80); padding: 8px; border-radius: 6px; margin: 2px; color: %1;").arg(current_color.name());
     label->setStyleSheet(style);
