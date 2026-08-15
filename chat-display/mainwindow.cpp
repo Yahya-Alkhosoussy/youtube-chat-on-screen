@@ -1,3 +1,6 @@
+#include <pybind11/embed.h>
+
+#include "ChatResponse.h"
 #include "mainwindow.h"
 #include "preferences.h"
 #include "ui_mainwindow.h"
@@ -6,9 +9,12 @@
 #include <QScreen>
 #include <QScrollBar>
 #include <QSettings>
+#include <QMessageBox>
 #include <string>
 
 #define DEBUG true
+
+namespace py = pybind11;
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -70,6 +76,11 @@ MainWindow::MainWindow(QWidget *parent)
             });
         }
     }
+
+    _poll_timer = new QTimer(this);
+    connect(_poll_timer, &QTimer::timeout, this, &MainWindow::poll_for_messages);
+    // defer the actual start until after the window is shown and the event loop is running
+    QTimer::singleShot(0, this, &MainWindow::start_poll_timer);
 }
 
 MainWindow::~MainWindow()
@@ -121,5 +132,44 @@ void MainWindow::applySettingsChanges(int fontSize, QColor colour, bool transpar
         centralWidget()->setStyleSheet("background: transparent;");
     } else {
         centralWidget()->setStyleSheet("background: rgb(30, 30, 30);");
+    }
+}
+
+void MainWindow::start_poll_timer() {
+    int milliseconds = poll_for_messages(); // call initially and find out the interval youtube gives
+    _poll_timer->start(milliseconds);
+}
+
+int MainWindow::poll_for_messages() {    
+    try {
+        // Add the current directory to Python's path so it can find your script
+        py::module_ sys = py::module_::import("sys");
+        sys.attr("path").attr("append")("/Users/yahyaamr/Documents/GitHub/youtube-chat-on-screen/chat-display/python");
+
+        py::module_ yt_api = py::module_::import("yt_api");
+
+        std::string live_chat_id = yt_api.attr("get_data")().cast<std::string>();
+
+        py::object messages;
+
+        if (!next_page_token.isNull()) {
+            messages = yt_api.attr("fetch_chat_msg")(live_chat_id, next_page_token);
+        } else {
+            messages = yt_api.attr("fetch_chat_msg")(live_chat_id);
+        }
+        ChatResponse response = ChatResponse::FromPyDict(messages.cast<py::dict>());
+    
+        for (auto message : response.messages) {
+            addMessage(QString(message.author) + QString(": ") + QString(message.message));
+        }
+        next_page_token = response.nextPageToken;
+        return response.pollingIntervalMillis;
+    } catch (py::error_already_set& e) {
+        QMessageBox::critical(
+            nullptr, 
+            "Authentication Failed",
+            QString("Could not authenticate with YouTube:\n%1").arg(e.what())
+        );
+        return 1;
     }
 }
