@@ -21,6 +21,8 @@ private:
         int rValue, gValue, bValue, aValue;
         RGBA(int r, int g, int b, int a): rValue(r), gValue(g), bValue(b), aValue(a) {};
     };
+    QTimer* _poll_timer;
+    QString next_page_token;
 
 public:
     explicit MainWindow(QWidget *parent = nullptr);
@@ -32,5 +34,7 @@ private:
     void addMessage(const QString &text); // to add a message on the display
     // helpful comment right? lol
     void applySettingsChanges(int fontSize, QColor colour, bool transparent, RGBA backgroundColor);
+    void start_poll_timer();
+    int poll_for_messages();
 };
 #endif // MAINWINDOW_H
