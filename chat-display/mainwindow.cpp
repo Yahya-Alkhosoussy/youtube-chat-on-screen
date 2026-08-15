@@ -77,14 +77,32 @@ MainWindow::MainWindow(QWidget *parent)
         }
     }
 
-    _poll_timer = new QTimer(this);
-    connect(_poll_timer, &QTimer::timeout, this, &MainWindow::poll_for_messages);
-    // defer the actual start until after the window is shown and the event loop is running
-    QTimer::singleShot(0, this, &MainWindow::start_poll_timer);
+    // Add the current directory to Python's path so it can find your script
+    py::module_ sys = py::module_::import("sys");
+    sys.attr("path").attr("append")("/Users/yahyaamr/Documents/GitHub/youtube-chat-on-screen/chat-display/python");
+
+    py::module_ yt_api = py::module_::import("yt_api");
+
+    std::string live_chat_id = yt_api.attr("get_data")().cast<std::string>();
+
+
+    qRegisterMetaType<ChatResponse>("ChatResponse");
+
+    worker = new ChatWorker(QString::fromStdString(live_chat_id));
+    worker->moveToThread(&worker_thread);
+
+    connect(&worker_thread, &QThread::started, worker, &ChatWorker::startPoll);
+    connect(worker, &ChatWorker::messagesFetched, this, &MainWindow::onMessageFetched);
+    connect(worker, &ChatWorker::errorOccurred, this, &MainWindow::onErrorOccurred);
+    connect(&worker_thread, &QThread::finished, worker, &QObject::deleteLater);
+
+    worker_thread.start();
 }
 
 MainWindow::~MainWindow()
 {
+    worker_thread.quit();
+    worker_thread.wait();
     delete ui;
 }
 
@@ -135,47 +153,18 @@ void MainWindow::applySettingsChanges(int fontSize, QColor colour, bool transpar
     }
 }
 
-void MainWindow::start_poll_timer() {
-    int milliseconds = poll_for_messages(); // call initially and find out the interval youtube gives
-    _poll_timer->start(milliseconds);
+void MainWindow::onMessageFetched(ChatResponse response) {
+    for (auto message : response.messages) {
+        if (seen_messages.contains(message.id)) continue; // the message was seen, do not add it.
+
+        seen_messages.insert(message.id);
+        messageIdOrder.enqueue(message.id);
+        if (messageIdOrder.size() > MAX_IDS_STORED) seen_messages.remove(messageIdOrder.dequeue()); // forcefully removes the first message from the queue.
+
+        addMessage(QString(message.author) + QString(": ") + QString(message.message));
+    }
 }
 
-int MainWindow::poll_for_messages() {    
-    try {
-        // Add the current directory to Python's path so it can find your script
-        py::module_ sys = py::module_::import("sys");
-        sys.attr("path").attr("append")("/Users/yahyaamr/Documents/GitHub/youtube-chat-on-screen/chat-display/python");
-
-        py::module_ yt_api = py::module_::import("yt_api");
-
-        std::string live_chat_id = yt_api.attr("get_data")().cast<std::string>();
-
-        py::object messages;
-
-        if (!next_page_token.isNull()) {
-            messages = yt_api.attr("fetch_chat_msg")(live_chat_id, next_page_token);
-        } else {
-            messages = yt_api.attr("fetch_chat_msg")(live_chat_id);
-        }
-        ChatResponse response = ChatResponse::FromPyDict(messages.cast<py::dict>());
-    
-        for (auto message : response.messages) {
-            if (seen_messages.contains(message.id)) continue; // the message was seen, do not add it.
-
-            seen_messages.insert(message.id);
-            messageIdOrder.enqueue(message.id);
-            if (messageIdOrder.size() > MAX_IDS_STORED) seen_messages.remove(messageIdOrder.dequeue()); // forcefully removes the first message from the queue.
-
-            addMessage(QString(message.author) + QString(": ") + QString(message.message));
-        }
-        next_page_token = response.nextPageToken;
-        return response.pollingIntervalMillis;
-    } catch (py::error_already_set& e) {
-        QMessageBox::critical(
-            nullptr, 
-            "Authentication Failed",
-            QString("Could not authenticate with YouTube:\n%1").arg(e.what())
-        );
-        return 1;
-    }
+void MainWindow::onErrorOccurred(QString error) {
+    qWarning() << "Chat polling error: " << error;
 }
