@@ -46,6 +46,12 @@ jobs:
           mkdir -p chat-display/python/secrets
           echo "$CLIENT_SECRET_JSON" > chat-display/python/secrets/client_secret.json
 
+      - name: List available Qt versions (diagnostic)
+        if: runner.os == 'Windows'
+        run: |
+          pip install aqtinstall
+          python -m aqt list-qt windows desktop
+
       - name: Install Qt
         uses: jurplel/install-qt-action@v4
         with:
