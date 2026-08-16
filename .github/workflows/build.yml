@@ -66,10 +66,11 @@ jobs:
       - name: Configure
         run: |
           echo "Using pybind11 dir: $PYBIND11_CMAKE_DIR"
-          cmake -B build -S chat-display \
-            -DCMAKE_BUILD_TYPE=Release \
-            -Dpybind11_DIR="${PYBIND11_CMAKE_DIR} \
-            -DVC_REDIST_INSTALLER="${VC_REDIST_PATH}"
+          if [ "$RUNNER_OS" == "Windows" ]; then
+            cmake -B build -S chat-display -DCMAKE_BUILD_TYPE=Release -Dpybind11_DIR="${PYBIND11_CMAKE_DIR}" -DVC_REDIST_INSTALLER="${VC_REDIST_PATH}"
+          else
+            cmake -B build -S chat-display -DCMAKE_BUILD_TYPE=Release -Dpybind11_DIR="${PYBIND11_CMAKE_DIR}"
+          fi
 
       - name: Build
         run: cmake --build build --config Release
