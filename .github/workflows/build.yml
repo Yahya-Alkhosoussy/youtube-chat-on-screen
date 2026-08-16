@@ -55,7 +55,7 @@ jobs:
       - name: Install Qt
         uses: jurplel/install-qt-action@v4
         with:
-          version: "6.11.0"
+          version: "6.11.2"
           modules: "qtmultimedia"
 
       - name: Install NSIS (Windows packaging tool)
