@@ -58,8 +58,6 @@ int main(int argc, char *argv[])
         py::module_ sys = py::module_::import("sys");
         qDebug() << "Embedded Python version:" << QString::fromStdString(sys.attr("version").cast<std::string>());
         qDebug() << "Embedded Python executable:" << QString::fromStdString(sys.attr("executable").cast<std::string>());
-        sys.attr("path").attr("append")("/Users/yahyaamr/Documents/GitHub/youtube-chat-on-screen/chat-display/python");
-        sys.attr("path").attr("append")("/Users/yahyaamr/Documents/GitHub/youtube-chat-on-screen/.venv/lib/python3.12/site-packages");
 
         py::module_ yt_api = py::module_::import("yt_api");
 

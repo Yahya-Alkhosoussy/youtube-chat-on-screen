@@ -47,11 +47,6 @@ void ChatWorker::poll() {
     try {
         py::gil_scoped_acquire aquire; // to use python from outside of the main thread
 
-
-        // Add the current directory to Python's path so it can find your script
-        py::module_ sys = py::module_::import("sys");
-        sys.attr("path").attr("append")("/Users/yahyaamr/Documents/GitHub/youtube-chat-on-screen/chat-display/python");
-
         py::module_ yt_api = py::module_::import("yt_api");
 
         std::string live_chat_id = yt_api.attr("get_data")().cast<std::string>();
