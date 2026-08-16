@@ -16,7 +16,6 @@ int main(int argc, char *argv[])
     QApplication a(argc, argv);
     QApplication::setOrganizationName("spiderbyte");
     QApplication::setApplicationName("chat-display");
-    MainWindow w;
 
     std::cout << "Made the application and main window" << std::endl;
 
@@ -102,6 +101,8 @@ int main(int argc, char *argv[])
         qDebug() << "Got an error from python! Error: " << e.what();
         return 1;
     }
+
+    MainWindow w;
     w.show();
     py::gil_scoped_release release;
 
