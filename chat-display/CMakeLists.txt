@@ -116,9 +116,9 @@ if(WIN32)
     if(DEFINED VC_REDIST_INSTALLER AND EXISTS "${VC_REDIST_INSTALLER}")
         file(TO_CMAKE_PATH "${VC_REDIST_INSTALLER}" VC_REDIST_INSTALLER)
         install(FILES "${VC_REDIST_INSTALLER}" DESTINATION redist)
-        set(CPACK_NSIS_EXTRA_INSTALL_COMMANDS
-            "ExecWait '\"$INSTDIR\\redist\\vc_redist.x64.exe\" /install /quiet /norestart'"
-        )
+        set(CPACK_NSIS_EXTRA_INSTALL_COMMANDS [[
+ExecWait '"$INSTDIR\redist\vc_redist.x64.exe" /install /quiet /norestart'
+]])
     else()
         message(WARNING "VC_REDIST_INSTALLER not provided — Windows installer will not bundle the VC++ Redistributable")
     endif()
