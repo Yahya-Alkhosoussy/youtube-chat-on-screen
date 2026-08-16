@@ -12,6 +12,14 @@ namespace py = pybind11;
 int main(int argc, char *argv[])
 {
     std::cout << "Entered the main file" << std::endl;
+
+    QApplication a(argc, argv);
+    QApplication::setOrganizationName("spiderbyte");
+    QApplication::setApplicationName("chat-display");
+    MainWindow w;
+
+    std::cout << "Made the application and main window" << std::endl;
+
     QString appDir = QCoreApplication::applicationDirPath();
 
     std::cout << "Found App Dir" << std::endl;
@@ -94,10 +102,6 @@ int main(int argc, char *argv[])
         qDebug() << "Got an error from python! Error: " << e.what();
         return 1;
     }
-    QApplication a(argc, argv);
-    QApplication::setOrganizationName("spiderbyte");
-    QApplication::setApplicationName("chat-display");
-    MainWindow w;
     w.show();
     py::gil_scoped_release release;
 
