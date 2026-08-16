@@ -10,6 +10,7 @@
 #include <QScrollBar>
 #include <QSettings>
 #include <QMessageBox>
+#include <QMediaFormat>
 #include <string>
 
 #define DEBUG false
@@ -60,6 +61,12 @@ MainWindow::MainWindow(QWidget *parent)
     settings.value("preferences/bValue").toInt(), settings.value("preferences/aValue").toInt());
 
     applySettingsChanges(size, color, transparent, backgroundColor);
+
+    m_audioOutput = new QAudioOutput(this);
+    m_notificationPlayer = new QMediaPlayer(this);
+    m_notificationPlayer->setAudioOutput(m_audioOutput);
+    m_notificationPlayer->setSource(QUrl("qrc:/sounds/WHO.wav"));
+    m_audioOutput->setVolume(0.5); // 0.0–1.0
 
     QScreen *screen = QGuiApplication::primaryScreen();
     QRect available = screen->availableGeometry();
@@ -156,14 +163,20 @@ void MainWindow::applySettingsChanges(int fontSize, QColor colour, bool transpar
 }
 
 void MainWindow::onMessageFetched(ChatResponse response) {
+    bool newMessage = false;
     for (auto message : response.messages) {
         if (seen_messages.contains(message.id)) continue; // the message was seen, do not add it.
 
+        newMessage = true;
         seen_messages.insert(message.id);
         messageIdOrder.enqueue(message.id);
         if (messageIdOrder.size() > MAX_IDS_STORED) seen_messages.remove(messageIdOrder.dequeue()); // forcefully removes the first message from the queue.
 
         addMessage(QString(message.author) + QString(": ") + QString(message.message));
+    }
+    if (newMessage) {
+        m_notificationPlayer->setPosition(0); // rewind, in case it's still finishing from a rapid prior message
+        m_notificationPlayer->play();
     }
 }
 
