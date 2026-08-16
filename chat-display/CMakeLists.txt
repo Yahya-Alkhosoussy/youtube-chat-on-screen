@@ -111,6 +111,9 @@ if(APPLE)
     set(CPACK_GENERATOR "DragNDrop")
 elseif(WIN32)
     set(CPACK_GENERATOR "NSIS")
+endif()
+
+if(WIN32)
     if(DEFINED VC_REDIST_INSTALLER AND EXISTS "${VC_REDIST_INSTALLER}")
         install(FILES "${VC_REDIST_INSTALLER}" DESTINATION redist)
         set(CPACK_NSIS_EXTRA_INSTALL_COMMANDS
@@ -120,6 +123,7 @@ elseif(WIN32)
         message(WARNING "VC_REDIST_INSTALLER not provided — Windows installer will not bundle the VC++ Redistributable")
     endif()
 endif()
+
 set(CPACK_PACKAGE_NAME "chat-display")
 set(CPACK_PACKAGE_VERSION "1.0.0")
 include(CPack)
