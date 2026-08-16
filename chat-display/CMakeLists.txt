@@ -28,6 +28,17 @@ if(WIN32)
     file(TO_CMAKE_PATH "${PYTHON_BASE_PREFIX}" PYTHON_BASE_PREFIX)
     file(GLOB PYTHON_RUNTIME_DLLS "${PYTHON_BASE_PREFIX}/python3*.dll")
     install(FILES ${PYTHON_RUNTIME_DLLS} DESTINATION ${CMAKE_INSTALL_BINDIR})
+    
+    install(DIRECTORY "${PYTHON_BASE_PREFIX}/Lib/"
+        DESTINATION python/Lib
+        PATTERN "site-packages" EXCLUDE
+        PATTERN "__pycache__" EXCLUDE
+        PATTERN "test" EXCLUDE
+    )
+
+    install(DIRECTORY "${PYTHON_BASE_PREFIX}/DLLs/"
+        DESTINATION python/DLLs
+    )
 endif()
 
 find_package(pybind11 CONFIG REQUIRED)
