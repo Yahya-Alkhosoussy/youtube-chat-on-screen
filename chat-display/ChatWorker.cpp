@@ -33,6 +33,7 @@ QObject(parent)
 }
 
 void ChatWorker::startPoll() {
+    qDebug() << "Starting poll";
     pollTimer = new QTimer(this);
     connect(pollTimer, &QTimer::timeout, this, &ChatWorker::poll);
     pollTimer->start(1100);
@@ -45,6 +46,8 @@ void ChatWorker::stopPoll() {
 
 void ChatWorker::poll() {
     try {
+        qDebug() << "Polling for message";
+
         py::gil_scoped_acquire aquire; // to use python from outside of the main thread
 
         py::module_ yt_api = py::module_::import("yt_api");
@@ -70,8 +73,10 @@ void ChatWorker::poll() {
         }
 
         emit messagesFetched(response);
+        qDebug() << "Got message, sending";
 
     } catch (const py::error_already_set& e) {
+        qDebug() << "Got an error";
         emit errorOccurred(QString::fromStdString(e.what()));
     }
 }
