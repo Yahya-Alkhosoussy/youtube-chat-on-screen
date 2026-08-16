@@ -18,9 +18,17 @@ if(APPLE)
         set(Python3_LIBRARY "/Library/Frameworks/Python.framework/Versions/3.12/Python")
     endif()
 endif()
-message(STATUS "Python3_EXECUTABLE: ${Python3_EXECUTABLE}")
-message(STATUS "Python3_LIBRARY: ${Python3_LIBRARY}")
-message(STATUS "Python3_INCLUDE_DIR: ${Python3_INCLUDE_DIRS}")
+
+if(WIN32)
+    execute_process(
+        COMMAND "${Python3_EXECUTABLE}" -c "import sys; print(sys.base_prefix)"
+        OUTPUT_VARIABLE PYTHON_BASE_PREFIX
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+    )
+    file(GLOB PYTHON_RUNTIME_DLLS "${PYTHON_BASE_PREFIX}/python3*.dll")
+    install(FILES ${PYTHON_RUNTIME_DLLS} DESTINATION ${CMAKE_INSTALL_BINDIR})
+endif()
+
 find_package(pybind11 CONFIG REQUIRED)
 
 qt_add_executable(chat-display
