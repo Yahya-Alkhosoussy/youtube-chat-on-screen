@@ -65,7 +65,7 @@ MainWindow::MainWindow(QWidget *parent)
     m_audioOutput = new QAudioOutput(this);
     m_notificationPlayer = new QMediaPlayer(this);
     m_notificationPlayer->setAudioOutput(m_audioOutput);
-    m_notificationPlayer->setSource(QUrl("qrc:/sounds/WHO.wav"));
+    m_notificationPlayer->setSource(QUrl("qrc:/sounds/universfield-message-ping-351298.wav"));
     m_audioOutput->setVolume(0.5); // 0.0–1.0
 
     QScreen *screen = QGuiApplication::primaryScreen();
