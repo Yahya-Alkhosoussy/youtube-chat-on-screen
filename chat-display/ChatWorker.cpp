@@ -1,5 +1,6 @@
 #include <pybind11/embed.h>
 #include "ChatWorker.h"
+#include <QDebug>
 
 namespace py = pybind11;
 
