@@ -57,12 +57,19 @@ jobs:
         if: runner.os == 'Windows'
         run: choco install nsis -y
 
+      - name: Download VC++ Redistributable
+        if: runner.os == 'Windows'
+        run: |
+          curl -L -o "${{ github.workspace }}\vc_redist.x64.exe" https://aka.ms/vs/17/release/vc_redist.x64.exe
+          echo "VC_REDIST_PATH=${{ github.workspace }}\vc_redist.x64.exe" >> "$GITHUB_ENV"
+
       - name: Configure
         run: |
           echo "Using pybind11 dir: $PYBIND11_CMAKE_DIR"
           cmake -B build -S chat-display \
             -DCMAKE_BUILD_TYPE=Release \
-            -Dpybind11_DIR="${PYBIND11_CMAKE_DIR}"
+            -Dpybind11_DIR="${PYBIND11_CMAKE_DIR} \
+            -DVC_REDIST_INSTALLER="${VC_REDIST_PATH}"
 
       - name: Build
         run: cmake --build build --config Release
