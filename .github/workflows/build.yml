@@ -34,7 +34,7 @@ jobs:
           else
             source .venv/bin/activate
           fi
-          pip install --upgrade pip
+          python -m pip install --upgrade pip
           pip install pybind11
           pip install -r chat-display/python/requirements.txt
           echo "$(python -m pybind11 --cmakedir)" > pybind11_cmakedir.txt
