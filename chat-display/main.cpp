@@ -1,5 +1,6 @@
 #include <pybind11/embed.h> // slots error if it is after anything QT
 #include "mainwindow.h"
+#include <iostream>
 
 #include <QApplication>
 #include <QDebug>
@@ -10,8 +11,10 @@ namespace py = pybind11;
 
 int main(int argc, char *argv[])
 {
-
+    std::cout << "Entered the main file" << std::endl;
     QString appDir = QCoreApplication::applicationDirPath();
+
+    std::cout << "Found App Dir" << std::endl;
 
     #ifdef Q_OS_MAC
         QString resourcesDir = QDir(appDir).filePath("../Resources");
@@ -20,18 +23,28 @@ int main(int argc, char *argv[])
         QString pythonRoot = QDir(appDir).filePath("../python"); // sibling of bin/, matches your install layout
     #endif
 
+    std::cout << "Found python root" << std::endl;
+
     QString sitePackages = QDir(pythonRoot).filePath("site-packages");
+
+    std::cout << "found site packages" << std::endl;
     QString scriptsDir = QDir(pythonRoot).filePath("scripts");
+    std::cout << "found scripts" << std::endl;
+
 
     #ifdef Q_OS_WIN
         qputenv("PYTHONHOME", pythonRoot.toUtf8().constData());
+        std::cout << "Python home is now in env" << std::endl;
     #endif
+
 
     QByteArray pathEnv = (sitePackages + QDir::listSeparator() + scriptsDir).toUtf8();
     qputenv("PYTHONPATH", pathEnv);
+    std::cout << "Python path now in env" << std::endl;
 
     // python stuff
     py::scoped_interpreter guard {};
+    std::cout << "Started python stuff" << std::endl;
     
     try {
         // Add the current directory to Python's path so it can find your script
