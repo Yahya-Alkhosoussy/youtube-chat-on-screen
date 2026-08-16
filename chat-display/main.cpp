@@ -17,18 +17,18 @@ int main(int argc, char *argv[])
         QString resourcesDir = QDir(appDir).filePath("../Resources");
         QString pythonRoot = QDir(resourcesDir).filePath("python");
     #elif defined(Q_OS_WIN)
-        QString pythonRoot = QDir(appDir).filePath("python"); // sits alongside the .exe
+        QString pythonRoot = QDir(appDir).filePath("../python"); // sibling of bin/, matches your install layout
     #endif
 
     QString sitePackages = QDir(pythonRoot).filePath("site-packages");
     QString scriptsDir = QDir(pythonRoot).filePath("scripts");
 
+    #ifdef Q_OS_WIN
+        qputenv("PYTHONHOME", pythonRoot.toUtf8().constData());
+    #endif
+
     QByteArray pathEnv = (sitePackages + QDir::listSeparator() + scriptsDir).toUtf8();
     qputenv("PYTHONPATH", pathEnv);
-
-    QApplication a(argc, argv);
-    QApplication::setOrganizationName("spiderbyte");
-    QApplication::setApplicationName("chat-display");
 
     // python stuff
     py::scoped_interpreter guard {};
@@ -81,6 +81,9 @@ int main(int argc, char *argv[])
         qDebug() << "Got an error from python! Error: " << e.what();
         return 1;
     }
+    QApplication a(argc, argv);
+    QApplication::setOrganizationName("spiderbyte");
+    QApplication::setApplicationName("chat-display");
     MainWindow w;
     w.show();
     py::gil_scoped_release release;
