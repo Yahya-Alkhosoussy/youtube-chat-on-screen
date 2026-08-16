@@ -5,6 +5,8 @@
 #include <QMainWindow>
 #include <QQueue>
 #include <QThread>
+#include <qmediaplayer.h>
+#include <QAudioOutput>
 #include "ChatWorker.h"
 
 QT_BEGIN_NAMESPACE
@@ -31,6 +33,8 @@ private:
     static constexpr int MAX_IDS_STORED = 500;
     QThread worker_thread;
     ChatWorker* worker = nullptr;
+    QMediaPlayer *m_notificationPlayer = nullptr;
+    QAudioOutput *m_audioOutput = nullptr;
 
 public:
     explicit MainWindow(QWidget *parent = nullptr);
