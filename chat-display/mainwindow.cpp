@@ -85,10 +85,6 @@ MainWindow::MainWindow(QWidget *parent)
     }
 
     try {
-
-        // Add the current directory to Python's path so it can find your script
-        py::module_ sys = py::module_::import("sys");
-
         py::module_ yt_api = py::module_::import("yt_api");
 
         std::string live_chat_id = yt_api.attr("get_data")().cast<std::string>();
