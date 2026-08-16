@@ -2,13 +2,25 @@ cmake_minimum_required(VERSION 3.19)
 project(chat-display LANGUAGES CXX)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+set(CMAKE_PREFIX_PATH "/Users/yahyaamr/Qt/6.11.0/macos")
+set(CMAKE_AUTORCC ON)
 
-find_package(Qt6 6.5 REQUIRED COMPONENTS Core Widgets)
+find_package(Qt6 6.5 REQUIRED COMPONENTS Core Widgets Multimedia)
 
 qt_standard_project_setup()
 
-set(Python3_ROOT_DIR "/Users/yahyaamr/Documents/GitHub/youtube-chat-on-screen/.venv")
+set(Python3_ROOT_DIR "${CMAKE_SOURCE_DIR}/../.venv")
 find_package(Python3 COMPONENTS Interpreter Development REQUIRED)
+if(APPLE)
+    if(NOT EXISTS "/Library/Frameworks/Python.framework/Versions/3.12/Python")
+        # only needed for the specific local install-name bug; skip if not applicable
+    else()
+        set(Python3_LIBRARY "/Library/Frameworks/Python.framework/Versions/3.12/Python")
+    endif()
+endif()
+message(STATUS "Python3_EXECUTABLE: ${Python3_EXECUTABLE}")
+message(STATUS "Python3_LIBRARY: ${Python3_LIBRARY}")
+message(STATUS "Python3_INCLUDE_DIR: ${Python3_INCLUDE_DIRS}")
 find_package(pybind11 CONFIG REQUIRED)
 
 qt_add_executable(chat-display
@@ -23,20 +35,49 @@ qt_add_executable(chat-display
     mainwindow.ui
     preferences.ui
     ChatWorker.cpp
+    sounds.qrc
 )
 
 target_link_libraries(chat-display
     PRIVATE
         Qt::Core
         Qt::Widgets
+        Qt::Multimedia
         pybind11::embed
 )
 
-install(TARGETS chat-display
-    BUNDLE  DESTINATION .
-    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-)
+if(APPLE)
+    install(CODE "
+        execute_process(COMMAND ditto
+            \"$<TARGET_BUNDLE_DIR:chat-display>\"
+            \"\${CMAKE_INSTALL_PREFIX}/chat-display.app\"
+        )
+    ")
+else()
+    install(TARGETS chat-display
+        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    )
+endif()
+
+if(APPLE)
+    install(DIRECTORY "${Python3_ROOT_DIR}/lib/python3.12/site-packages/"
+        DESTINATION chat-display.app/Contents/Resources/python/site-packages
+    )
+    install(DIRECTORY "${CMAKE_SOURCE_DIR}/python/"
+        DESTINATION chat-display.app/Contents/Resources/python/scripts
+        PATTERN "token.json" EXCLUDE
+        PATTERN "__pycache__" EXCLUDE
+        PATTERN ".DS_Store" EXCLUDE
+    )
+elseif(WIN32)
+    install(DIRECTORY "${Python3_ROOT_DIR}/Lib/site-packages/"
+        DESTINATION python/site-packages
+    )
+    install(DIRECTORY "${CMAKE_SOURCE_DIR}/python/"
+        DESTINATION python/scripts
+    )
+endif()
 
 qt_generate_deploy_app_script(
     TARGET chat-display
@@ -44,3 +85,13 @@ qt_generate_deploy_app_script(
     NO_UNSUPPORTED_PLATFORM_ERROR
 )
 install(SCRIPT ${deploy_script})
+
+# Step 6 — CPack, must come last
+if(APPLE)
+    set(CPACK_GENERATOR "DragNDrop")
+elseif(WIN32)
+    set(CPACK_GENERATOR "NSIS")
+endif()
+set(CPACK_PACKAGE_NAME "chat-display")
+set(CPACK_PACKAGE_VERSION "1.0.0")
+include(CPack)
