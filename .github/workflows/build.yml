@@ -70,7 +70,7 @@ jobs:
       - name: Install
         run: |
           rm -rf install_dir
-          cmake --install build --config Release --prefix install_dir
+          cmake --install build --config Release --prefix "${{ github.workspace }}/install_dir"
 
       - name: Package
         working-directory: build
