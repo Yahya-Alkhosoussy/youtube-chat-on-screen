@@ -46,11 +46,22 @@ jobs:
           mkdir -p chat-display/python/secrets
           echo "$CLIENT_SECRET_JSON" > chat-display/python/secrets/client_secret.json
 
+      - name: Create aqt settings (increase checksum retry tolerance)
+        if: runner.os == 'Windows'
+        run: |
+          cat > aqt-settings.ini << 'EOF'
+          [requests]
+          max_retries_to_retrieve_hash = 10
+          connection_timeout = 60
+          response_timeout = 60
+          EOF
+
       - name: Install Qt
         uses: jurplel/install-qt-action@v4
         with:
           version: "6.11.2"
           modules: "qtmultimedia"
+          settings-file: "aqt-settings.ini"
 
       - name: Install NSIS (Windows packaging tool)
         if: runner.os == 'Windows'
