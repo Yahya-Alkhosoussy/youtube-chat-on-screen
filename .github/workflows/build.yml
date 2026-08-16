@@ -37,7 +37,8 @@ jobs:
           python -m pip install --upgrade pip
           pip install pybind11
           pip install -r chat-display/python/requirements.txt
-          echo "$(python -m pybind11 --cmakedir)" > pybind11_cmakedir.txt
+          PYBIND11_CMAKE_DIR=$(python -m pybind11 --cmakedir)
+          echo "PYBIND11_CMAKE_DIR=$PYBIND11_CMAKE_DIR" >> "$GITHUB_ENV"
 
       - name: Restore client_secret.json
         env:
@@ -58,10 +59,10 @@ jobs:
 
       - name: Configure
         run: |
-          PYBIND11_DIR=$(cat pybind11_cmakedir.txt)
+          echo "Using pybind11 dir: $PYBIND11_CMAKE_DIR"
           cmake -B build -S chat-display \
             -DCMAKE_BUILD_TYPE=Release \
-            -DCMAKE_PREFIX_PATH="${PYBIND11_DIR}"
+            -Dpybind11_DIR="${PYBIND11_CMAKE_DIR}"
 
       - name: Build
         run: cmake --build build --config Release
