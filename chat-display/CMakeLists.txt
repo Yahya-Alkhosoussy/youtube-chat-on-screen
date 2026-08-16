@@ -2,7 +2,6 @@ cmake_minimum_required(VERSION 3.19)
 project(chat-display LANGUAGES CXX)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-set(CMAKE_PREFIX_PATH "/Users/yahyaamr/Qt/6.11.0/macos")
 set(CMAKE_AUTORCC ON)
 
 find_package(Qt6 6.5 REQUIRED COMPONENTS Core Widgets Multimedia)
