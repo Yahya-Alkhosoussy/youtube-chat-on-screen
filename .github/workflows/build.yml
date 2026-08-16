@@ -1,0 +1,85 @@
+name: Build Installers
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch: {}
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, windows-latest]
+
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash   # unifies commands across macOS + Windows (Git Bash is available on windows-latest)
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Create venv one level above chat-display
+        run: |
+          python -m venv .venv
+          if [ "$RUNNER_OS" == "Windows" ]; then
+            source .venv/Scripts/activate
+          else
+            source .venv/bin/activate
+          fi
+          pip install --upgrade pip
+          pip install pybind11
+          pip install -r chat-display/python/requirements.txt
+          echo "$(python -m pybind11 --cmakedir)" > pybind11_cmakedir.txt
+
+      - name: Restore client_secret.json
+        env:
+          CLIENT_SECRET_JSON: ${{ secrets.YOUTUBE_CLIENT_SECRET_JSON }}
+        run: |
+          mkdir -p chat-display/python/secrets
+          echo "$CLIENT_SECRET_JSON" > chat-display/python/secrets/client_secret.json
+
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: "6.11.0"
+          modules: "qtmultimedia"
+
+      - name: Install NSIS (Windows packaging tool)
+        if: runner.os == 'Windows'
+        run: choco install nsis -y
+
+      - name: Configure
+        run: |
+          PYBIND11_DIR=$(cat pybind11_cmakedir.txt)
+          cmake -B build -S chat-display \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_PREFIX_PATH="${PYBIND11_DIR}"
+
+      - name: Build
+        run: cmake --build build --config Release
+
+      - name: Install
+        run: |
+          rm -rf install_dir
+          cmake --install build --config Release --prefix install_dir
+
+      - name: Package
+        working-directory: build
+        run: cpack -C Release
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: chat-display-${{ runner.os }}
+          path: |
+            build/*.dmg
+            build/*.exe
+          if-no-files-found: error
