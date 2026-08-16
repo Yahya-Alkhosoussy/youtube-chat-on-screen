@@ -3,12 +3,29 @@
 
 #include <QApplication>
 #include <QDebug>
+#include <QDir>
 #include <QMessageBox>
 
 namespace py = pybind11;
 
 int main(int argc, char *argv[])
 {
+
+    QString appDir = QCoreApplication::applicationDirPath();
+
+    #ifdef Q_OS_MAC
+        QString resourcesDir = QDir(appDir).filePath("../Resources");
+        QString pythonRoot = QDir(resourcesDir).filePath("python");
+    #elif defined(Q_OS_WIN)
+        QString pythonRoot = QDir(appDir).filePath("python"); // sits alongside the .exe
+    #endif
+
+    QString sitePackages = QDir(pythonRoot).filePath("site-packages");
+    QString scriptsDir = QDir(pythonRoot).filePath("scripts");
+
+    QByteArray pathEnv = (sitePackages + QDir::listSeparator() + scriptsDir).toUtf8();
+    qputenv("PYTHONPATH", pathEnv);
+
     QApplication a(argc, argv);
     QApplication::setOrganizationName("spiderbyte");
     QApplication::setApplicationName("chat-display");
@@ -67,6 +84,6 @@ int main(int argc, char *argv[])
     MainWindow w;
     w.show();
     py::gil_scoped_release release;
-    
+
     return QApplication::exec();
 }
