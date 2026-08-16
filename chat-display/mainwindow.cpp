@@ -84,26 +84,31 @@ MainWindow::MainWindow(QWidget *parent)
         }
     }
 
-    // Add the current directory to Python's path so it can find your script
-    py::module_ sys = py::module_::import("sys");
-    sys.attr("path").attr("append")("/Users/yahyaamr/Documents/GitHub/youtube-chat-on-screen/chat-display/python");
+    try {
 
-    py::module_ yt_api = py::module_::import("yt_api");
+        // Add the current directory to Python's path so it can find your script
+        py::module_ sys = py::module_::import("sys");
 
-    std::string live_chat_id = yt_api.attr("get_data")().cast<std::string>();
+        py::module_ yt_api = py::module_::import("yt_api");
+
+        std::string live_chat_id = yt_api.attr("get_data")().cast<std::string>();
 
 
-    qRegisterMetaType<ChatResponse>("ChatResponse");
+        qRegisterMetaType<ChatResponse>("ChatResponse");
 
-    worker = new ChatWorker(QString::fromStdString(live_chat_id));
-    worker->moveToThread(&worker_thread);
+        worker = new ChatWorker(QString::fromStdString(live_chat_id));
+        worker->moveToThread(&worker_thread);
 
-    connect(&worker_thread, &QThread::started, worker, &ChatWorker::startPoll);
-    connect(worker, &ChatWorker::messagesFetched, this, &MainWindow::onMessageFetched);
-    connect(worker, &ChatWorker::errorOccurred, this, &MainWindow::onErrorOccurred);
-    connect(&worker_thread, &QThread::finished, worker, &QObject::deleteLater);
+        connect(&worker_thread, &QThread::started, worker, &ChatWorker::startPoll);
+        connect(worker, &ChatWorker::messagesFetched, this, &MainWindow::onMessageFetched);
+        connect(worker, &ChatWorker::errorOccurred, this, &MainWindow::onErrorOccurred);
+        connect(&worker_thread, &QThread::finished, worker, &QObject::deleteLater);
 
-    worker_thread.start();
+        worker_thread.start();
+    } catch (const py::error_already_set &e) {
+    QMessageBox::critical(this, "Startup Error",
+        QString("Failed to connect to YouTube chat:\n%1").arg(e.what()));
+    }
 }
 
 MainWindow::~MainWindow()
