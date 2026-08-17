@@ -50,5 +50,8 @@ private:
 private slots:
     void onMessageFetched(ChatResponse resp);
     void onErrorOccurred(QString error);
+
+protected:
+    void changeEvent(QEvent *event) override;
 };
 #endif // MAINWINDOW_H

@@ -24,7 +24,8 @@ MainWindow::MainWindow(QWidget *parent)
     ui->setupUi(this);
 
     setAttribute(Qt::WA_TranslucentBackground);
-    setWindowFlags(windowFlags() | Qt::FramelessWindowHint);
+    setWindowFlags(windowFlags() | Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint);
+    setAttribute(Qt::WA_TransparentForMouseEvents, true);
 
     connect(ui->actionExit, &QAction::triggered, this, &QMainWindow::close);
     connect(ui->actionPrefrences, &QAction::triggered, this, [this]() {
@@ -183,4 +184,11 @@ void MainWindow::onMessageFetched(ChatResponse response) {
 
 void MainWindow::onErrorOccurred(QString error) {
     qWarning() << "Chat polling error: " << error;
+}
+
+void MainWindow::changeEvent(QEvent* event) {
+    QMainWindow::changeEvent(event);
+    if (event->type() == QEvent::ActivationChange) {
+        setAttribute(Qt::WA_TransparentForMouseEvents, !isActiveWindow());
+    }
 }
