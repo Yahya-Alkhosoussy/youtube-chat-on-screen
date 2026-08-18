@@ -23,7 +23,7 @@ class YoutubeLiveChatMemberMilestoneDetails(BaseModel):
     memberMonth: int
     memberLevelName: str
 
-class YoutubeLiveChatNewSponserDetails(BaseModel):
+class YoutubeLiveChatNewSponsorDetails(BaseModel):
     memberLevelName: str
     isUpgrade: bool
 
@@ -44,7 +44,7 @@ class YoutubeLiveChatSuperStickerMetaData(BaseModel):
     tier: int
 
 class YoutubeLiveChatSuperStickerDetails(BaseModel):
-    superStickerMetaData: YoutubeLiveChatSuperStickerMetaData
+    superStickerMetadata: YoutubeLiveChatSuperStickerMetaData
 
 class YoutubeLiveChatPollOptions(BaseModel):
     optionText: str
@@ -61,7 +61,7 @@ class YoutubeLiveChatPollMetaData(BaseModel):
     status: StatusStrEnum
 
 class YoutubeLiveChatPollDetails(BaseModel):
-    metaData: YoutubeLiveChatPollMetaData
+    metadata: YoutubeLiveChatPollMetaData
 
 class YoutubeLiveChatMembershipGiftingDetails(BaseModel):
     giftMembershipCount: int
@@ -111,7 +111,7 @@ class YoutubeLiveChatMessageSnippet(BaseModel):
     textMessageDetails: YoutubeLiveChatTextMessageDetails | None = None
     userBannedDetails: YoutubeLiveChatUserBannedDetails | None = None
     memberMilestoneChatDetails: YoutubeLiveChatMemberMilestoneDetails | None = None
-    newSponserDetails: YoutubeLiveChatNewSponserDetails | None = None
+    newSponsorDetails: YoutubeLiveChatNewSponsorDetails | None = None
     superChatDetails: YoutubeLiveChatSuperChatDetails | None = None
     superStickerDetails: YoutubeLiveChatSuperStickerDetails | None = None
     pollDetails: YoutubeLiveChatPollDetails | None = None
