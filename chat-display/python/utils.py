@@ -120,15 +120,15 @@ class YoutubeLiveChatMessageSnippet(BaseModel):
     giftEventDetails: YoutubeLiveChatGiftEventDetails | None = None
 
 class YoutubeLiveChatMessage(BaseModel):
-    kind: str
-    etag: str
+    kind: str | None = None
+    etag: str | None = None
     id: str
     snippet: YoutubeLiveChatMessageSnippet
     authorDetails: YoutubeLiveChatAuthorDetails | None = None
 
 class YoutubeLiveChatResponse(BaseModel):
-    kind: str
-    etag: str
+    kind: str | None = None
+    etag: str | None = None
     nextPageToken: str | None = None
     pollingIntervalMillis: int | None = 5000
     items: list[YoutubeLiveChatMessage] = []
