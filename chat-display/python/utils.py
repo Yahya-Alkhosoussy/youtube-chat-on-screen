@@ -129,6 +129,6 @@ class YoutubeLiveChatMessage(BaseModel):
 class YoutubeLiveChatResponse(BaseModel):
     kind: str
     etag: str
-    next_page_token: str | None = None
+    nextPageToken: str | None = None
     pollingIntervalMillis: int | None = 5000
     items: list[YoutubeLiveChatMessage] = []
