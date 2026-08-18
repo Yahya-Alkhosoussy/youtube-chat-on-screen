@@ -5,6 +5,7 @@ secrets/
 # Prerequisites
 *.d
 .DS_Store
+*.proto
 
 # Compiled Object files
 *.slo
