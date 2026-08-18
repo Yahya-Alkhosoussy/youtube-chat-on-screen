@@ -1,11 +1,17 @@
 import json
 import os
+from collections.abc import Callable
+from dataclasses import dataclass
 from pathlib import Path
 
+import stream_list_pb2
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
+from google.protobuf.json_format import MessageToDict
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
+from pydantic import BaseModel
+from stream_list_pb2_grpc import V3DataLiveChatMessageServiceStub, grpc
 from utils import YoutubeLiveChatResponse
 
 # Scope needed to read YouTube Live Chat data
@@ -48,6 +54,24 @@ def get_authenticated_service():
 
     # Build and return the YouTube API client object
     youtube = build('youtube', 'v3', credentials=creds)
+
+
+@dataclass(frozen=True)
+class Creds(BaseModel):
+    token: str
+    refresh_token: str
+    token_uri: str
+    client_id: str
+    client_secret: str
+    scopes: list[str]
+    universe_domain: str
+    account: str
+    expiry: str
+
+
+def get_credentials() -> Creds:
+    with open(Path(__file__).parent / "secrets" / "token.json") as f:
+        return Creds.model_validate(json.load(f))
 
 def initialize_auth():
     """Explicit startup entry point — call once from C++ before showing the main window."""
@@ -108,7 +132,7 @@ def fetch_chat_msg(live_chat_id: str, next_page_token: str | None = None):
         # Return structured data back to C++
         return {
                 "pollingIntervalMillis": parsed_response.pollingIntervalMillis,
-                "nextPageToken": parsed_response.next_page_token,
+                "nextPageToken": parsed_response.nextPageToken,
                 "messages": [
                     {
                         "id": msg.id,
@@ -120,6 +144,39 @@ def fetch_chat_msg(live_chat_id: str, next_page_token: str | None = None):
             }
     except Exception as e: # noqa
         raise RuntimeError("Something went wrong")
+
+def stream_chat_messages(live_chat_id: str, callback: Callable):
+    creds = get_credentials()
+    channel_creds = grpc.ssl_channel_credentials()
+    with grpc.secure_channel("dns:///youtube.googleapis.com:443", channel_creds) as channel:
+        stub = V3DataLiveChatMessageServiceStub(channel)
+        metadata = (("authorization", "Bearer " + creds.token),)
+        next_page_token = None
+        while True:
+            request = stream_list_pb2.LiveChatMessageListRequest(
+                part=["snippet", "authorDetails"],
+                live_chat_id=live_chat_id,
+                page_token=next_page_token,
+            )
+            for response in stub.StreamList(request, metadata=metadata):
+                try:
+                    _response = YoutubeLiveChatResponse.model_validate(MessageToDict(response, preserving_proto_field_name=False, always_print_fields_with_no_presence=True))
+                except Exception:  # noqa: BLE001, S112
+                    continue
+                _to_send = {
+                    "pollingIntervalMillis": _response.pollingIntervalMillis,
+                    "nextPageToken": _response.nextPageToken,
+                    "messages": [
+                        {
+                            "id": message.id,
+                            "author": message.authorDetails.displayName if message.authorDetails else "unknown",
+                            "message": message.snippet.displayMessage or ""
+                        }
+                        for message in _response.items
+                    ]
+                }
+                callback(_to_send)
+                next_page_token = _response.nextPageToken
 
 def catch_data():
     data = {"author": "User1", "message": "Hello from Python!"}
