@@ -33,18 +33,6 @@ QObject(parent)
     liveChatid = _liveChatId;
 }
 
-void ChatWorker::startPoll() {
-    qDebug() << "Starting poll";
-    pollTimer = new QTimer(this);
-    connect(pollTimer, &QTimer::timeout, this, &ChatWorker::poll);
-    pollTimer->start(1100);
-    poll();
-}
-
-void ChatWorker::stopPoll() {
-    if (pollTimer) pollTimer->stop();
-}
-
 void ChatWorker::poll() {
     try {
         qDebug() << "Polling for message";
@@ -53,28 +41,13 @@ void ChatWorker::poll() {
 
         py::module_ yt_api = py::module_::import("yt_api");
 
-        std::string live_chat_id = yt_api.attr("get_data")().cast<std::string>();
-
-        py::object messages;
-
-        if (!nextPageToken.isNull()) {
-            messages = yt_api.attr("fetch_chat_msg")(live_chat_id, nextPageToken);
-        } else {
-            messages = yt_api.attr("fetch_chat_msg")(live_chat_id);
-        }
-
-        ChatResponse response = parseChatResponse(messages.cast<py::dict>());
-
-        if (!response.nextPageToken.isNull()) {
-            nextPageToken = response.nextPageToken;
-        }
-
-        if (pollTimer) {
-            pollTimer->setInterval(response.pollingIntervalMillis);
-        }
-
-        emit messagesFetched(response);
-        qDebug() << "Got message, sending";
+        yt_api.attr("stream_chat_message")(
+            liveChatid.toStdString(),
+            py::cpp_function([this](py::object response) {
+                ChatResponse parsed = parseChatResponse(response);
+                emit messagesFetched(parsed);
+            })
+        );
 
     } catch (const py::error_already_set& e) {
         qDebug() << "Got an error";
