@@ -161,7 +161,8 @@ def stream_chat_messages(live_chat_id: str, callback: Callable):
             for response in stub.StreamList(request, metadata=metadata):
                 try:
                     _response = YoutubeLiveChatResponse.model_validate(MessageToDict(response, preserving_proto_field_name=False, always_print_fields_with_no_presence=True))
-                except Exception:  # noqa: BLE001, S112
+                except Exception as e:  # noqa: BLE001
+                    print("VALIDATION FAILED:", e)  # temporary — stop silently swallowing this
                     continue
                 _to_send = {
                     "pollingIntervalMillis": _response.pollingIntervalMillis,
@@ -202,25 +203,14 @@ def print_stream_url():
         print("No active broadcast found.")
 
 if __name__ == "__main__":
-    import time
+    def got_msg(msg):
+        print(msg)
+
     try:
         get_authenticated_service()
         print("Starting to listen")
         print_stream_url()
-        next_page_token = None
-        while True:
-            # Call your function
-            data = fetch_chat_msg(get_data(), next_page_token)
+        data = stream_chat_messages(get_data(), got_msg)
 
-            for msg in data.get("messages", []):
-                print(f"[{msg['author']}]: {msg['message']}")
-
-            # Update token and interval
-            next_page_token = data.get("nextPageToken")
-            poll_interval = data.get("pollingIntervalMillis", 5000) / 1000.0
-            print("sleeping: ", poll_interval)
-
-            # Wait before next poll
-            time.sleep(poll_interval)
     except KeyboardInterrupt:
         print("\nStopped listening.")
