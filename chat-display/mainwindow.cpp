@@ -96,6 +96,7 @@ MainWindow::MainWindow(QWidget *parent)
         worker = new ChatWorker(QString::fromStdString(live_chat_id));
         worker->moveToThread(&worker_thread);
 
+        connect(&worker_thread, &QThread::started, worker, &ChatWorker::poll);
         connect(worker, &ChatWorker::messagesFetched, this, &MainWindow::onMessageFetched);
         connect(worker, &ChatWorker::errorOccurred, this, &MainWindow::onErrorOccurred);
         connect(&worker_thread, &QThread::finished, worker, &QObject::deleteLater);
