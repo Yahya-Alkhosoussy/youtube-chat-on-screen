@@ -41,7 +41,7 @@ void ChatWorker::poll() {
 
         py::module_ yt_api = py::module_::import("yt_api");
 
-        yt_api.attr("stream_chat_message")(
+        yt_api.attr("stream_chat_messages")(
             liveChatid.toStdString(),
             py::cpp_function([this](py::object response) {
                 ChatResponse parsed = parseChatResponse(response);
