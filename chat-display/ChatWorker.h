@@ -15,17 +15,11 @@ public:
     explicit ChatWorker(const QString &liveChatId, QObject *parent = nullptr);
 
 public slots:
-    void startPoll();
-    void stopPoll();
-
+    void poll();
 signals:
 
     void messagesFetched(ChatResponse response);
     void errorOccurred(QString message);
-
-private slots:
-
-    void poll();
 
 private:
     QString liveChatid;
