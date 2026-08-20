@@ -36,24 +36,30 @@ private:
     QMediaPlayer *m_notificationPlayer = nullptr;
     QAudioOutput *m_audioOutput = nullptr;
     QPoint dragPosition;
+    QShortcut *toggleShortcut = nullptr;
+    bool interactive = true;
 
 public:
     explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow() override;
+
+    #ifdef Q_OS_WIN
+        void applyClickThroughNative(bool clickThrough);
+    #endif
 
 private:
     Ui::MainWindow *ui;
 
     void addMessage(const QString &text); // to add a message on the display
     // helpful comment right? lol
-    void applySettingsChanges(int fontSize, QColor colour, bool transparent, RGBA backgroundColor, int audioValue = 0);
+    void applySettingsChanges(int fontSize, QColor colour, bool transparent, RGBA backgroundColor, int audioValue, QKeySequence visibilityShortcut);
 
 private slots:
     void onMessageFetched(ChatResponse resp);
     void onErrorOccurred(QString error);
+    void toggleInteractive();
 
 protected:
-    void changeEvent(QEvent *event) override;
     void mousePressEvent(QMouseEvent *event) override;
     void mouseMoveEvent(QMouseEvent *event) override;
 };
