@@ -54,3 +54,13 @@ void ChatWorker::poll() {
         emit errorOccurred(QString::fromStdString(e.what()));
     }
 }
+
+void ChatWorker::stopPoll() {
+    try {
+        py::gil_scoped_acquire acquire;
+        py::module_ yt_api = py::module_::import("yt_api");
+        yt_api.attr("cancel_stream")();
+    } catch (const py::error_already_set& e) {
+        qWarning() << "Error from python: " << e.what();
+    }
+}

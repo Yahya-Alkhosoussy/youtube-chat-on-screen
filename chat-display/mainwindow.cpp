@@ -15,6 +15,8 @@
 #include <QMediaPlayer>
 #include <QMouseEvent>
 #include <string>
+#include <future>
+#include <chrono>
 
 #define DEBUG false
 
@@ -141,14 +143,35 @@ MainWindow::MainWindow(QWidget *parent)
     }
 }
 
-MainWindow::~MainWindow()
+void MainWindow::stopWorkerGracefully()
 {
-    worker->stopPoll();
+    if (worker) {
+        auto future = std::async(std::launch::async, [this]() {
+            worker->stopPoll();
+        });
+
+        if (future.wait_for(std::chrono::seconds(2)) == std::future_status::timeout) {
+            qWarning() << "requestStop() did not complete in time — proceeding with forced shutdown";
+        }
+    }
+
     worker_thread.quit();
-    if (!worker_thread.wait(3000)) { // give it 3 seconds to shut down gracefully
-        worker_thread.terminate();   // last resort — unsafe, but better than hanging forever
+    if (!worker_thread.wait(3000)) {
+        qDebug() << "Shutting down worker thread forcefully";
+        worker_thread.terminate();
         worker_thread.wait();
     }
+}
+
+void MainWindow::shutdownAndExit()
+{
+    stopWorkerGracefully();
+    qApp->quit();
+}
+
+MainWindow::~MainWindow()
+{
+    stopWorkerGracefully(); // safety net for any destruction path that didn't go through shutdownAndExit()
     delete ui;
 }
 

@@ -56,6 +56,8 @@ private:
     // helpful comment right? lol
     void applySettingsChanges(int fontSize, QColor colour, bool transparent, RGBA backgroundColor, int audioValue, QKeySequence visibilityShortcut);
 
+    void stopWorkerGracefully();
+
 private slots:
     void onMessageFetched(ChatResponse resp);
     void onErrorOccurred(QString error);
@@ -64,5 +66,8 @@ private slots:
 protected:
     void mousePressEvent(QMouseEvent *event) override;
     void mouseMoveEvent(QMouseEvent *event) override;
+
+public slots:
+    void shutdownAndExit();
 };
 #endif // MAINWINDOW_H

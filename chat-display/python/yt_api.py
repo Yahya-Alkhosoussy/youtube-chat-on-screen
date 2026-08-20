@@ -170,7 +170,9 @@ def stream_chat_messages(live_chat_id: str, callback: Callable):
             )
             for response in stub.StreamList(request, metadata=metadata):
                 try:
-                    _response = YoutubeLiveChatResponse.model_validate(MessageToDict(response, preserving_proto_field_name=False, always_print_fields_with_no_presence=True))
+                    _response = YoutubeLiveChatResponse.model_validate(
+                        MessageToDict(response, preserving_proto_field_name=False, always_print_fields_with_no_presence=True)
+                    )
                 except Exception as e:  # noqa: BLE001
                     print("VALIDATION FAILED:", e)  # temporary — stop silently swallowing this
                     continue
