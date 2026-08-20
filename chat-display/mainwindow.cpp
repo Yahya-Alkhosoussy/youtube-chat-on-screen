@@ -143,8 +143,12 @@ MainWindow::MainWindow(QWidget *parent)
 
 MainWindow::~MainWindow()
 {
+    worker->stopPoll();
     worker_thread.quit();
-    worker_thread.wait();
+    if (!worker_thread.wait(3000)) { // give it 3 seconds to shut down gracefully
+        worker_thread.terminate();   // last resort — unsafe, but better than hanging forever
+        worker_thread.wait();
+    }
     delete ui;
 }
 
