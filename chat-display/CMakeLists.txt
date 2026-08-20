@@ -121,6 +121,16 @@ elseif(WIN32)
 endif()
 
 if(WIN32)
+    if(NOT DEFINED VC_REDIST_INSTALLER)
+        file(GLOB VC_REDIST_CANDIDATES
+            "C:/Program Files (x86)/Microsoft Visual Studio/2022/*/VC/Redist/MSVC/*/vc_redist.x64.exe"
+            "C:/Program Files/Microsoft Visual Studio/2022/*/VC/Redist/MSVC/*/vc_redist.x64.exe"
+        )
+        if(VC_REDIST_CANDIDATES)
+            list(GET VC_REDIST_CANDIDATES 0 VC_REDIST_INSTALLER)
+        endif()
+    endif()
+
     if(DEFINED VC_REDIST_INSTALLER AND EXISTS "${VC_REDIST_INSTALLER}")
         file(TO_CMAKE_PATH "${VC_REDIST_INSTALLER}" VC_REDIST_INSTALLER)
         install(FILES "${VC_REDIST_INSTALLER}" DESTINATION redist)
