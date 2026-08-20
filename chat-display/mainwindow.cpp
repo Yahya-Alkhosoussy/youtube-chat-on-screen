@@ -12,6 +12,7 @@
 #include <QSettings>
 #include <QMessageBox>
 #include <QMediaFormat>
+#include <QMediaPlayer>
 #include <QMouseEvent>
 #include <string>
 
@@ -249,4 +250,10 @@ void MainWindow::toggleInteractive() {
         applyClickThroughNative(!interactive);
     #endif
     qDebug() << "interactive mode" << interactive;
+}
+
+void MainWindow::playNotificationSound(int volume) {
+    m_audioOutput->setVolume(volume / 100.0);
+    m_notificationPlayer->setPosition(0);
+    m_notificationPlayer->play();
 }

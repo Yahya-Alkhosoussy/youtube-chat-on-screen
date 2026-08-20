@@ -43,6 +43,8 @@ public:
     explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow() override;
 
+    void playNotificationSound(int audioLevel);
+
     #ifdef Q_OS_WIN
         void applyClickThroughNative(bool clickThrough);
     #endif
