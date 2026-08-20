@@ -26,6 +26,7 @@ public:
     int getAudioValue();
 
     QString getColourName();
+    QKeySequence getVisibilityShortcut();
 
 private:
     Ui::preferences *ui;
