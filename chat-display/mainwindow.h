@@ -35,6 +35,7 @@ private:
     ChatWorker* worker = nullptr;
     QMediaPlayer *m_notificationPlayer = nullptr;
     QAudioOutput *m_audioOutput = nullptr;
+    QPoint dragPosition;
 
 public:
     explicit MainWindow(QWidget *parent = nullptr);
@@ -45,7 +46,7 @@ private:
 
     void addMessage(const QString &text); // to add a message on the display
     // helpful comment right? lol
-    void applySettingsChanges(int fontSize, QColor colour, bool transparent, RGBA backgroundColor);
+    void applySettingsChanges(int fontSize, QColor colour, bool transparent, RGBA backgroundColor, int audioValue = 0);
 
 private slots:
     void onMessageFetched(ChatResponse resp);
@@ -53,5 +54,7 @@ private slots:
 
 protected:
     void changeEvent(QEvent *event) override;
+    void mousePressEvent(QMouseEvent *event) override;
+    void mouseMoveEvent(QMouseEvent *event) override;
 };
 #endif // MAINWINDOW_H
