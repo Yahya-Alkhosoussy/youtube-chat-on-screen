@@ -1,5 +1,6 @@
 import json
 import os
+import threading
 from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
@@ -19,13 +20,16 @@ SCOPES = ['https://www.googleapis.com/auth/youtube.readonly']
 
 youtube = None
 
+_active_channel = None
+_channel_lock = threading.Lock()
+
 def get_authenticated_service():
     """Handles the OAuth2 flow and caches credentials in token.json."""
     global youtube
     if youtube:
         return youtube
     creds = None
-    
+
     # Absolute paths are safer when running from C++
     script_dir = Path(__file__).parent / "secrets"
     if not script_dir.exists():
@@ -146,9 +150,15 @@ def fetch_chat_msg(live_chat_id: str, next_page_token: str | None = None):
         raise RuntimeError("Something went wrong")
 
 def stream_chat_messages(live_chat_id: str, callback: Callable):
+    global _active_channel
+
     creds = get_credentials()
     channel_creds = grpc.ssl_channel_credentials()
     with grpc.secure_channel("dns:///youtube.googleapis.com:443", channel_creds) as channel:
+
+        with _channel_lock:
+            _active_channel = channel
+
         stub = V3DataLiveChatMessageServiceStub(channel)
         metadata = (("authorization", "Bearer " + creds.token),)
         next_page_token = None
@@ -187,20 +197,25 @@ def catch_data():
 def print_stream_url():
     if youtube is None:
         raise ValueError("Youtube is still set to none")
-    
+
     request = youtube.liveBroadcasts().list(
         part="snippet",
         mine=True
     )
     response = request.execute()
     items = response.get("items", [])
-    
+
     if items:
         video_id = items[0]["id"]
         print("OPEN THIS LINK IN YOUR BROWSER TO TYPE CHAT:")
         print(f"https://www.youtube.com/watch?v={video_id}")
     else:
         print("No active broadcast found.")
+
+def cancel_stream():
+    with _channel_lock:
+        if _active_channel is not None:
+            _active_channel.close()
 
 if __name__ == "__main__":
     def got_msg(msg):
