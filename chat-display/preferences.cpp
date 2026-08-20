@@ -3,6 +3,7 @@
 #include <QSettings>
 #include <QFont>
 #include <QDebug>
+#include <QKeySequence>
 
 preferences::preferences(QWidget *parent)
     : QDialog(parent)
@@ -19,6 +20,7 @@ preferences::preferences(QWidget *parent)
     int bValue = settings.value("preferences/bValue").toInt(); 
     int aValue = settings.value("preferences/aValue").toInt();
     int audioValue = settings.value("preferences/audioValue").toInt();
+    QKeySequence visibilityShortcut = settings.value("preferences/visibilityShortcut", QKeySequence("Ctrl+i")).value<QKeySequence>();
 
     qDebug() << "Combo box text:" << ui->colourComboBox->currentText()
              << "| Resulting QColor:" << color
@@ -32,6 +34,7 @@ preferences::preferences(QWidget *parent)
     ui->bSpinnerBox->setValue(bValue);
     ui->aSpinnerBox->setValue(aValue);
     ui->AudioSpinnerBox->setValue(audioValue);
+    ui->keySequenceEdit->setKeySequence(visibilityShortcut);
 }
 
 int preferences::getFontSize() {
@@ -68,6 +71,10 @@ int preferences::getAudioValue() {
 
 QString preferences::getColourName() {
     return ui->colourComboBox->currentText();
+}
+
+QKeySequence preferences::getVisibilityShortcut() {
+    return ui->keySequenceEdit->keySequence();
 }
 
 preferences::~preferences()
