@@ -1,6 +1,7 @@
 # Vscode stuff
 .vscode/
 secrets/
+app_install/
 
 # Prerequisites
 *.d
