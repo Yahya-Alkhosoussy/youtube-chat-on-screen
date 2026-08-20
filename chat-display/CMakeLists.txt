@@ -51,7 +51,7 @@ endif()
 find_package(pybind11 CONFIG REQUIRED)
 
 qt_add_executable(chat-display
-    WIN32 MACOSX_BUNDLE
+    MACOSX_BUNDLE
     main.cpp
     mainwindow.cpp
     preferences.cpp
@@ -113,6 +113,19 @@ qt_generate_deploy_app_script(
 )
 install(SCRIPT ${deploy_script})
 
+if(WIN32)
+    install(CODE "
+        file(GLOB FFMPEG_DLLS
+            \"\${CMAKE_INSTALL_PREFIX}/bin/avcodec-*.dll\"
+            \"\${CMAKE_INSTALL_PREFIX}/bin/avformat-*.dll\"
+            \"\${CMAKE_INSTALL_PREFIX}/bin/avutil-*.dll\"
+            \"\${CMAKE_INSTALL_PREFIX}/bin/swscale-*.dll\"
+            \"\${CMAKE_INSTALL_PREFIX}/bin/swresample-*.dll\"
+        )
+        file(COPY \${FFMPEG_DLLS} DESTINATION \"\${CMAKE_INSTALL_PREFIX}/plugins/multimedia\")
+    ")
+endif()
+
 # Step 6 — CPack, must come last
 if(APPLE)
     set(CPACK_GENERATOR "DragNDrop")
@@ -143,5 +156,5 @@ ExecWait '"$INSTDIR/redist/vc_redist.x64.exe" /install /quiet /norestart'
 endif()
 
 set(CPACK_PACKAGE_NAME "chat-display")
-set(CPACK_PACKAGE_VERSION "1.2.4")
+set(CPACK_PACKAGE_VERSION "1.3.0")
 include(CPack)
