@@ -156,5 +156,5 @@ ExecWait '"$INSTDIR/redist/vc_redist.x64.exe" /install /quiet /norestart'
 endif()
 
 set(CPACK_PACKAGE_NAME "chat-display")
-set(CPACK_PACKAGE_VERSION "1.3.0")
+set(CPACK_PACKAGE_VERSION "1.3.1")
 include(CPack)
