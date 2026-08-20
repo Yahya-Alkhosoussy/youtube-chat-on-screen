@@ -58,12 +58,12 @@ MainWindow::MainWindow(QWidget *parent)
     });
 
     QSettings settings;
-    int size = settings.value("preferences/fontSize").toInt();
-    QColor color = settings.value("preferences/textColor").toString();
-    bool transparent = settings.value("preferences/transparentBackground").toBool();
-    RGBA backgroundColor(settings.value("preferences/rValue").toInt(), settings.value("preferences/gValue").toInt(), 
-    settings.value("preferences/bValue").toInt(), settings.value("preferences/aValue").toInt());
-    int audioValue = settings.value("preferences/audioValue").toInt();
+    int size = settings.value("preferences/fontSize", 14).toInt();
+    QColor color = settings.value("preferences/textColor", QColor(QString("White"))).toString();
+    bool transparent = settings.value("preferences/transparentBackground", true).toBool();
+    RGBA backgroundColor(settings.value("preferences/rValue", 0).toInt(), settings.value("preferences/gValue", 0).toInt(), 
+    settings.value("preferences/bValue", 0).toInt(), settings.value("preferences/aValue", 80).toInt());
+    int audioValue = settings.value("preferences/audioValue", 50).toInt();
 
     applySettingsChanges(size, color, transparent, backgroundColor);
 
