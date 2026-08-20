@@ -6,8 +6,22 @@
 #include <QDebug>
 #include <QDir>
 #include <QMessageBox>
+#include <QProcess>
 
 namespace py = pybind11;
+
+#ifdef Q_OS_WIN
+    #ifdef _DEBUG
+        QString findPythonHome() {
+            QProcess process;
+            process.start("python", QStringList() << "-c" << "import sys; print(sys.base_prefix)");
+            process.waitForFinished();
+            QString result = QString::fromUtf8(process.readAllStandardOutput()).trimmed();
+            std::cout << result.toStdString() << std::endl;
+            return result;
+        }
+    #endif
+#endif
 
 int main(int argc, char *argv[])
 {
@@ -27,7 +41,11 @@ int main(int argc, char *argv[])
         QString resourcesDir = QDir(appDir).filePath("../Resources");
         QString pythonRoot = QDir(resourcesDir).filePath("python");
     #elif defined(Q_OS_WIN)
-        QString pythonRoot = QDir(appDir).filePath("../python"); // sibling of bin/, matches your install layout
+        #ifndef _DEBUG 
+            QString pythonRoot = QDir(appDir).filePath("../python"); // sibling of bin/, matches your install layout
+        #else
+            QString pythonRoot = QDir(appDir).filePath("../venv");
+        #endif
     #endif
 
     std::cout << "Found python root" << std::endl;
@@ -40,7 +58,16 @@ int main(int argc, char *argv[])
 
 
     #ifdef Q_OS_WIN
-        qputenv("PYTHONHOME", pythonRoot.toUtf8().constData());
+        #ifndef _DEBUG
+            qputenv("PYTHONHOME", pythonRoot.toUtf8().constData());
+        #else
+            sitePackages = QDir(appDir).filePath("../../.venv/Lib/site-packages");
+            scriptsDir = QDir(appDir).filePath("../../chat-display/python");
+            qputenv("PYTHONHOME", findPythonHome().toUtf8().constData());
+            std::cout << "DEBUG MODE: PATHS OVERWRITTEN" << std::endl;
+            std::cout << "found site packages: " << sitePackages.toStdString() << std::endl;
+            std::cout << "found scripts: " << scriptsDir.toStdString() << std::endl;
+        #endif
         std::cout << "Python home is now in env" << std::endl;
     #endif
 
@@ -102,6 +129,9 @@ int main(int argc, char *argv[])
 
     MainWindow w;
     w.show();
+    #ifdef Q_OS_WIN
+        w.applyClickThroughNative(false);
+    #endif
     py::gil_scoped_release release;
 
     return QApplication::exec();
