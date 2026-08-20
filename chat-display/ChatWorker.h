@@ -16,6 +16,7 @@ public:
 
 public slots:
     void poll();
+    void stopPoll();
 signals:
 
     void messagesFetched(ChatResponse response);
