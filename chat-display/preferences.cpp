@@ -18,7 +18,7 @@ preferences::preferences(QWidget *parent)
     int gValue = settings.value("preferences/gValue").toInt();
     int bValue = settings.value("preferences/bValue").toInt(); 
     int aValue = settings.value("preferences/aValue").toInt();
-
+    int audioValue = settings.value("preferences/audioValue").toInt();
 
     qDebug() << "Combo box text:" << ui->colourComboBox->currentText()
              << "| Resulting QColor:" << color
@@ -31,6 +31,7 @@ preferences::preferences(QWidget *parent)
     ui->gSpinnerBox->setValue(gValue);
     ui->bSpinnerBox->setValue(bValue);
     ui->aSpinnerBox->setValue(aValue);
+    ui->AudioSpinnerBox->setValue(audioValue);
 }
 
 int preferences::getFontSize() {
@@ -59,6 +60,10 @@ int preferences::getGValue() {
 
 int preferences::getRValue() {
     return ui->rSpinnerBox->value();
+}
+
+int preferences::getAudioValue() {
+    return ui->AudioSpinnerBox->value();
 }
 
 QString preferences::getColourName() {

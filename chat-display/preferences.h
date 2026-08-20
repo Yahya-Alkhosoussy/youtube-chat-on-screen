@@ -23,6 +23,7 @@ public:
     int getGValue();
     int getBValue();
     int getAValue();
+    int getAudioValue();
 
     QString getColourName();
 
