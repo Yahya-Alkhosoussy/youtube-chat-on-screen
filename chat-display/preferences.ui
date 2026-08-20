@@ -250,9 +250,9 @@ li.checked::marker { content: &quot;\2612&quot;; }
   <widget class="QSpinBox" name="AudioSpinnerBox">
    <property name="geometry">
     <rect>
-     <x>210</x>
+     <x>200</x>
      <y>240</y>
-     <width>91</width>
+     <width>111</width>
      <height>31</height>
     </rect>
    </property>
@@ -285,6 +285,19 @@ li.checked::marker { content: &quot;\2612&quot;; }
      <width>181</width>
      <height>24</height>
     </rect>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="pushButton">
+   <property name="geometry">
+    <rect>
+     <x>310</x>
+     <y>240</y>
+     <width>80</width>
+     <height>31</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Test</string>
    </property>
   </widget>
  </widget>

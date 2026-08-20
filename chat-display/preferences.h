@@ -27,6 +27,7 @@ public:
 
     QString getColourName();
     QKeySequence getVisibilityShortcut();
+    void playPreview();
 
 private:
     Ui::preferences *ui;

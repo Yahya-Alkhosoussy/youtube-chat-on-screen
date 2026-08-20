@@ -1,3 +1,4 @@
+#include "mainwindow.h"
 #include "preferences.h"
 #include "ui_preferences.h"
 #include <QSettings>
@@ -34,7 +35,9 @@ preferences::preferences(QWidget *parent)
     ui->bSpinnerBox->setValue(bValue);
     ui->aSpinnerBox->setValue(aValue);
     ui->AudioSpinnerBox->setValue(audioValue);
+    ui->AudioSpinnerBox->setRange(0, 100);
     ui->keySequenceEdit->setKeySequence(visibilityShortcut);
+    connect(ui->pushButton, &QPushButton::pressed, this, &preferences::playPreview);
 }
 
 int preferences::getFontSize() {
@@ -75,6 +78,15 @@ QString preferences::getColourName() {
 
 QKeySequence preferences::getVisibilityShortcut() {
     return ui->keySequenceEdit->keySequence();
+}
+
+void preferences::playPreview() {
+    MainWindow* mw = qobject_cast<MainWindow*>(parentWidget());
+    if (!mw) {
+        qWarning("Unable to test audio from settings");
+        return;
+    }
+    mw->playNotificationSound(getAudioValue());
 }
 
 preferences::~preferences()
