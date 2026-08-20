@@ -11,6 +11,7 @@
 #include <QSettings>
 #include <QMessageBox>
 #include <QMediaFormat>
+#include <QMouseEvent>
 #include <string>
 
 #define DEBUG false
@@ -39,9 +40,10 @@ MainWindow::MainWindow(QWidget *parent)
             int gValue = dialog.getGValue();
             int bValue = dialog.getBValue();
             int aValue = dialog.getAValue();
+            int audioValue = dialog.getAudioValue();
             RGBA backgroundColour(rValue, gValue, bValue, aValue);
 
-            applySettingsChanges(size, color, transparent, backgroundColour);
+            applySettingsChanges(size, color, transparent, backgroundColour, audioValue);
             QSettings settings;
             qDebug() << "Color name: " << color_name;
             settings.setValue("preferences/fontSize", size);
@@ -51,6 +53,7 @@ MainWindow::MainWindow(QWidget *parent)
             settings.setValue("preferences/gValue", gValue);
             settings.setValue("preferences/bValue", bValue);
             settings.setValue("preferences/aValue", aValue);
+            settings.setValue("preferences/audioValue", audioValue);
         }
     });
 
@@ -60,6 +63,7 @@ MainWindow::MainWindow(QWidget *parent)
     bool transparent = settings.value("preferences/transparentBackground").toBool();
     RGBA backgroundColor(settings.value("preferences/rValue").toInt(), settings.value("preferences/gValue").toInt(), 
     settings.value("preferences/bValue").toInt(), settings.value("preferences/aValue").toInt());
+    int audioValue = settings.value("preferences/audioValue").toInt();
 
     applySettingsChanges(size, color, transparent, backgroundColor);
 
@@ -67,7 +71,7 @@ MainWindow::MainWindow(QWidget *parent)
     m_notificationPlayer = new QMediaPlayer(this);
     m_notificationPlayer->setAudioOutput(m_audioOutput);
     m_notificationPlayer->setSource(QUrl("qrc:/sounds/universfield-message-ping-351298.wav"));
-    m_audioOutput->setVolume(0.5); // 0.0–1.0
+    m_audioOutput->setVolume(audioValue / 100); // 0.0–1.0
 
     QScreen *screen = QGuiApplication::primaryScreen();
     QRect available = screen->availableGeometry();
@@ -136,7 +140,7 @@ void MainWindow::addMessage(const QString &text) {
     });
 }
 
-void MainWindow::applySettingsChanges(int fontSize, QColor colour, bool transparent, RGBA backgroundColor) {
+void MainWindow::applySettingsChanges(int fontSize, QColor colour, bool transparent, RGBA backgroundColor, int audioValue) {
     QFont font;
     font.setPointSize(fontSize);
 
@@ -162,6 +166,8 @@ void MainWindow::applySettingsChanges(int fontSize, QColor colour, bool transpar
     } else {
         centralWidget()->setStyleSheet("background: rgb(30, 30, 30);");
     }
+
+    m_audioOutput->setVolume(audioValue / 100); // 0.0–1.0
 }
 
 void MainWindow::onMessageFetched(ChatResponse response) {
@@ -190,5 +196,19 @@ void MainWindow::changeEvent(QEvent* event) {
     QMainWindow::changeEvent(event);
     if (event->type() == QEvent::ActivationChange) {
         setAttribute(Qt::WA_TransparentForMouseEvents, !isActiveWindow());
+    }
+}
+
+void MainWindow::mousePressEvent(QMouseEvent* event) {
+    if (event->button() == Qt::LeftButton) {
+        dragPosition = event->globalPosition().toPoint() - frameGeometry().topLeft();
+        event->accept();
+    }
+}
+
+void MainWindow::mouseMoveEvent(QMouseEvent* event) {
+    if (event->buttons() & Qt::LeftButton) {
+        move(event->globalPosition().toPoint() - dragPosition);
+        event->accept();
     }
 }
