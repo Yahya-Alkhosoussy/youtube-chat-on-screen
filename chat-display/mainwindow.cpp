@@ -48,7 +48,7 @@ MainWindow::MainWindow(QWidget *parent)
         setAttribute(Qt::WA_TransparentForMouseEvents, true);
     #endif
 
-    connect(ui->actionExit, &QAction::triggered, this, &QMainWindow::close);
+    connect(ui->actionExit, &QAction::triggered, this, &QApplication::quit);
     connect(ui->actionPrefrences, &QAction::triggered, this, [this]() {
         preferences dialog(this);
         if (dialog.exec() == QDialog::Accepted) {
