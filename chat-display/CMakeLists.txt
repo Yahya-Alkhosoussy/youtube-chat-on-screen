@@ -38,6 +38,14 @@ if(WIN32)
     install(DIRECTORY "${PYTHON_BASE_PREFIX}/DLLs/"
         DESTINATION python/DLLs
     )
+
+    execute_process(
+        COMMAND "${Python3_EXECUTABLE}" -m pybind11 --cmakedir
+        OUTPUT_VARIABLE PYBIND11_CMAKE_DIR
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+    )
+    file(TO_CMAKE_PATH "${PYBIND11_CMAKE_DIR}" PYBIND11_CMAKE_DIR)
+    set(pybind11_DIR "${PYBIND11_CMAKE_DIR}")
 endif()
 
 find_package(pybind11 CONFIG REQUIRED)
