@@ -6,6 +6,7 @@
 #include "ui_mainwindow.h"
 #include <QLabel>
 #include <QTimer>
+#include <QShortcut>
 #include <QScreen>
 #include <QScrollBar>
 #include <QSettings>
@@ -15,6 +16,20 @@
 #include <string>
 
 #define DEBUG false
+
+#ifdef Q_OS_WIN
+    #include <windows.h>
+    void MainWindow::applyClickThroughNative(bool clickThrough) {
+        HWND hwnd = reinterpret_cast<HWND>(winId());
+        LONG_PTR exStyle = GetWindowLongPtr(hwnd, GWL_EXSTYLE);
+        if (clickThrough) {
+            exStyle |= WS_EX_TRANSPARENT | WS_EX_LAYERED;
+        } else {
+            exStyle &= ~WS_EX_TRANSPARENT;
+        }
+        SetWindowLongPtr(hwnd, GWL_EXSTYLE, exStyle);
+    }
+#endif
 
 namespace py = pybind11;
 
@@ -26,7 +41,11 @@ MainWindow::MainWindow(QWidget *parent)
 
     setAttribute(Qt::WA_TranslucentBackground);
     setWindowFlags(windowFlags() | Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint);
-    setAttribute(Qt::WA_TransparentForMouseEvents, true);
+    #ifdef Q_OS_WIN
+
+    #else
+        setAttribute(Qt::WA_TransparentForMouseEvents, true);
+    #endif
 
     connect(ui->actionExit, &QAction::triggered, this, &QMainWindow::close);
     connect(ui->actionPrefrences, &QAction::triggered, this, [this]() {
@@ -42,8 +61,9 @@ MainWindow::MainWindow(QWidget *parent)
             int aValue = dialog.getAValue();
             int audioValue = dialog.getAudioValue();
             RGBA backgroundColour(rValue, gValue, bValue, aValue);
+            QKeySequence visibilityShortcut = dialog.getVisibilityShortcut();
 
-            applySettingsChanges(size, color, transparent, backgroundColour, audioValue);
+            applySettingsChanges(size, color, transparent, backgroundColour, audioValue, visibilityShortcut);
             QSettings settings;
             qDebug() << "Color name: " << color_name;
             settings.setValue("preferences/fontSize", size);
@@ -54,6 +74,7 @@ MainWindow::MainWindow(QWidget *parent)
             settings.setValue("preferences/bValue", bValue);
             settings.setValue("preferences/aValue", aValue);
             settings.setValue("preferences/audioValue", audioValue);
+            settings.setValue("preferences/visibilityShortcut", visibilityShortcut.toString());
         }
     });
 
@@ -64,14 +85,18 @@ MainWindow::MainWindow(QWidget *parent)
     RGBA backgroundColor(settings.value("preferences/rValue", 0).toInt(), settings.value("preferences/gValue", 0).toInt(), 
     settings.value("preferences/bValue", 0).toInt(), settings.value("preferences/aValue", 80).toInt());
     int audioValue = settings.value("preferences/audioValue", 50).toInt();
-
-    applySettingsChanges(size, color, transparent, backgroundColor);
+    QKeySequence visibilityShortcut = settings.value("preferences/visibilityShortcut", QKeySequence("Ctrl+i")).value<QKeySequence>();
 
     m_audioOutput = new QAudioOutput(this);
     m_notificationPlayer = new QMediaPlayer(this);
     m_notificationPlayer->setAudioOutput(m_audioOutput);
     m_notificationPlayer->setSource(QUrl("qrc:/sounds/universfield-message-ping-351298.wav"));
-    m_audioOutput->setVolume(audioValue / 100); // 0.0–1.0
+
+    toggleShortcut = new QShortcut(visibilityShortcut, this);
+    toggleShortcut->setContext(Qt::ApplicationShortcut);
+    connect(toggleShortcut, &QShortcut::activated, this, &MainWindow::toggleInteractive);
+
+    applySettingsChanges(size, color, transparent, backgroundColor, audioValue, visibilityShortcut);
 
     QScreen *screen = QGuiApplication::primaryScreen();
     QRect available = screen->availableGeometry();
@@ -88,6 +113,9 @@ MainWindow::MainWindow(QWidget *parent)
             });
         }
     }
+
+    ui->scrollArea_messages->viewport()->setAttribute(Qt::WA_TransparentForMouseEvents, true);
+
 
     try {
         py::module_ yt_api = py::module_::import("yt_api");
@@ -128,6 +156,8 @@ void MainWindow::addMessage(const QString &text) {
     QString style = QString("background: rgba(0, 0, 0, 80); padding: 8px; border-radius: 6px; margin: 2px; color: %1;").arg(current_color.name());
     label->setStyleSheet(style);
     label->setFont(current_font);
+    label->setAttribute(Qt::WA_TransparentForMouseEvents, !interactive);
+    label->setTextInteractionFlags(Qt::NoTextInteraction);
 
     // insert before the spacer
     ui->verticalLayout_messages->insertWidget(
@@ -140,7 +170,7 @@ void MainWindow::addMessage(const QString &text) {
     });
 }
 
-void MainWindow::applySettingsChanges(int fontSize, QColor colour, bool transparent, RGBA backgroundColor, int audioValue) {
+void MainWindow::applySettingsChanges(int fontSize, QColor colour, bool transparent, RGBA backgroundColor, int audioValue, QKeySequence visibilityShortcut) {
     QFont font;
     font.setPointSize(fontSize);
 
@@ -167,7 +197,7 @@ void MainWindow::applySettingsChanges(int fontSize, QColor colour, bool transpar
         centralWidget()->setStyleSheet("background: rgb(30, 30, 30);");
     }
 
-    m_audioOutput->setVolume(audioValue / 100); // 0.0–1.0
+    m_audioOutput->setVolume(audioValue / 100.0); // 0.0–1.0
 }
 
 void MainWindow::onMessageFetched(ChatResponse response) {
@@ -192,13 +222,6 @@ void MainWindow::onErrorOccurred(QString error) {
     qWarning() << "Chat polling error: " << error;
 }
 
-void MainWindow::changeEvent(QEvent* event) {
-    QMainWindow::changeEvent(event);
-    if (event->type() == QEvent::ActivationChange) {
-        setAttribute(Qt::WA_TransparentForMouseEvents, !isActiveWindow());
-    }
-}
-
 void MainWindow::mousePressEvent(QMouseEvent* event) {
     if (event->button() == Qt::LeftButton) {
         dragPosition = event->globalPosition().toPoint() - frameGeometry().topLeft();
@@ -211,4 +234,19 @@ void MainWindow::mouseMoveEvent(QMouseEvent* event) {
         move(event->globalPosition().toPoint() - dragPosition);
         event->accept();
     }
+}
+
+void MainWindow::toggleInteractive() {
+    interactive = !interactive;
+    setAttribute(Qt::WA_TransparentForMouseEvents, !interactive);
+    for (int i = 0; i < ui->verticalLayout_messages->count(); i++) {
+        QWidget* widget = ui->verticalLayout_messages->itemAt(i)->widget();
+        if (widget) {
+            widget->setAttribute(Qt::WA_TransparentForMouseEvents, !interactive);
+        }
+    }
+    #ifdef Q_OS_WIN
+        applyClickThroughNative(!interactive);
+    #endif
+    qDebug() << "interactive mode" << interactive;
 }
