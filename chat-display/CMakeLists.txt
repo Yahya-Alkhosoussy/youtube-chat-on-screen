@@ -51,7 +51,7 @@ endif()
 find_package(pybind11 CONFIG REQUIRED)
 
 qt_add_executable(chat-display
-    MACOSX_BUNDLE
+    WIN32 MACOSX_BUNDLE
     main.cpp
     mainwindow.cpp
     preferences.cpp
