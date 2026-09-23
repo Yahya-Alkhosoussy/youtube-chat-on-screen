@@ -26,7 +26,7 @@ public:
     int getAudioValue();
 
     QString getColourName();
-    QKeySequence getVisibilityShortcut();
+    bool getInteractible();
     void playPreview();
 
 private:

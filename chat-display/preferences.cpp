@@ -21,7 +21,7 @@ preferences::preferences(QWidget *parent)
     int bValue = settings.value("preferences/bValue").toInt(); 
     int aValue = settings.value("preferences/aValue").toInt();
     int audioValue = settings.value("preferences/audioValue").toInt();
-    QKeySequence visibilityShortcut = settings.value("preferences/visibilityShortcut", QKeySequence("Ctrl+i")).value<QKeySequence>();
+    bool interactible = settings.value("preferences/interactible", false).toBool();
 
     qDebug() << "Combo box text:" << ui->colourComboBox->currentText()
              << "| Resulting QColor:" << color
@@ -36,7 +36,7 @@ preferences::preferences(QWidget *parent)
     ui->aSpinnerBox->setValue(aValue);
     ui->AudioSpinnerBox->setValue(audioValue);
     ui->AudioSpinnerBox->setRange(0, 100);
-    ui->keySequenceEdit->setKeySequence(visibilityShortcut);
+    ui->interactivity->setChecked(interactible);
     connect(ui->pushButton, &QPushButton::pressed, this, &preferences::playPreview);
 }
 
@@ -76,8 +76,8 @@ QString preferences::getColourName() {
     return ui->colourComboBox->currentText();
 }
 
-QKeySequence preferences::getVisibilityShortcut() {
-    return ui->keySequenceEdit->keySequence();
+bool preferences::getInteractible() {
+    return ui->interactivity->isChecked();
 }
 
 void preferences::playPreview() {
