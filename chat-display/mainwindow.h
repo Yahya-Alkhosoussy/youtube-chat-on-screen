@@ -36,7 +36,6 @@ private:
     QMediaPlayer *m_notificationPlayer = nullptr;
     QAudioOutput *m_audioOutput = nullptr;
     QPoint dragPosition;
-    QShortcut *toggleShortcut = nullptr;
     bool interactive = true;
 
 public:
@@ -47,6 +46,8 @@ public:
 
     #ifdef Q_OS_WIN
         void applyClickThroughNative(bool clickThrough);
+    protected: 
+        bool nativeEvent(const QByteArray& eventType, void* message, qintptr* result);
     #endif
 
 private:
@@ -54,7 +55,7 @@ private:
 
     void addMessage(const QString &text); // to add a message on the display
     // helpful comment right? lol
-    void applySettingsChanges(int fontSize, QColor colour, bool transparent, RGBA backgroundColor, int audioValue, QKeySequence visibilityShortcut);
+    void applySettingsChanges(int fontSize, QColor colour, bool transparent, RGBA backgroundColor, int audioValue, bool interactible);
 
     void stopWorkerGracefully();
 
