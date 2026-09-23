@@ -44,8 +44,16 @@ if(WIN32)
         OUTPUT_VARIABLE PYBIND11_CMAKE_DIR
         OUTPUT_STRIP_TRAILING_WHITESPACE
     )
-    file(TO_CMAKE_PATH "${PYBIND11_CMAKE_DIR}" PYBIND11_CMAKE_DIR)
-    set(pybind11_DIR "${PYBIND11_CMAKE_DIR}")
+    string(REPLACE "\"" "" PYBIND11_CMAKE_DIR "${PYBIND11_CMAKE_DIR}") # sss
+    file(TO_CMAKE_PATH ${PYBIND11_CMAKE_DIR} PYBIND11_CMAKE_DIR)
+    message(STATUS "pybind11 cmake dir: ${PYBIND11_CMAKE_DIR}")
+
+    if(NOT EXISTS "${PYBIND11_CMAKE_DIR}/pybind11Config.cmake")
+        message(FATAL_ERROR "pybind11Config.cmake not found under '${PYBIND11_CMAKE_DIR}'")
+    endif()
+
+    list(PREPEND CMAKE_PREFIX_PATH "${PYBIND11_CMAKE_DIR}")
+
 endif()
 
 find_package(pybind11 CONFIG REQUIRED)
