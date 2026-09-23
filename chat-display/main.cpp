@@ -40,6 +40,9 @@ int main(int argc, char *argv[])
     #ifdef Q_OS_MAC
         QString resourcesDir = QDir(appDir).filePath("../Resources");
         QString pythonRoot = QDir(resourcesDir).filePath("python");
+    #elif Q_OS_LINUX
+        QString resourcesDir = QDir(appDir).filePath("../Resources");
+        QString pythonRoot = QDir(resourcesDir).filePath("python");
     #elif defined(Q_OS_WIN)
         #ifndef _DEBUG 
             QString pythonRoot = QDir(appDir).filePath("../python"); // sibling of bin/, matches your install layout
