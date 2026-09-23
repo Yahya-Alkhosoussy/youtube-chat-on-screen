@@ -22,15 +22,40 @@
 
 #ifdef Q_OS_WIN
     #include <windows.h>
+    #include <windowsx.h>
     void MainWindow::applyClickThroughNative(bool clickThrough) {
         HWND hwnd = reinterpret_cast<HWND>(winId());
         LONG_PTR exStyle = GetWindowLongPtr(hwnd, GWL_EXSTYLE);
-        if (clickThrough) {
-            exStyle |= WS_EX_TRANSPARENT | WS_EX_LAYERED;
-        } else {
-            exStyle &= ~WS_EX_TRANSPARENT;
-        }
+        exStyle |= WS_EX_LAYERED;
         SetWindowLongPtr(hwnd, GWL_EXSTYLE, exStyle);
+    }
+
+    bool MainWindow::nativeEvent(const QByteArray& eventType, void* message, qintptr* result) {
+        MSG *msg = static_cast<MSG*>(message);
+
+        if (msg->message == WM_NCHITTEST && !interactive) {
+            POINT pt{ GET_X_LPARAM(msg->lParam), GET_Y_LPARAM(msg->lParam) };
+            ScreenToClient(reinterpret_cast<HWND>(winId()), &pt);
+
+            // menuBar()->geometry() is in logical (DIP) coords; the message
+            // gives physical pixels, so scale by the DPI ratio before comparing.
+            const qreal dpr = devicePixelRatioF();
+            QRect menuRect(
+                qRound(menuBar()->x() * dpr),
+                qRound(menuBar()->y() * dpr),
+                qRound(menuBar()->width() * dpr),
+                qRound(menuBar()->height() * dpr)
+            );
+
+            if (!menuRect.contains(pt.x, pt.y)) {
+                *result = HTTRANSPARENT;   // let the click fall through everywhere else
+                return true;
+            }
+            // inside the menu bar: fall through to default handling below,
+            // so it behaves like a normal, clickable widget
+        }
+
+        return QMainWindow::nativeEvent(eventType, message, result);
     }
 #endif
 
@@ -64,9 +89,9 @@ MainWindow::MainWindow(QWidget *parent)
             int aValue = dialog.getAValue();
             int audioValue = dialog.getAudioValue();
             RGBA backgroundColour(rValue, gValue, bValue, aValue);
-            QKeySequence visibilityShortcut = dialog.getVisibilityShortcut();
+            bool interactible = dialog.getInteractible();
 
-            applySettingsChanges(size, color, transparent, backgroundColour, audioValue, visibilityShortcut);
+            applySettingsChanges(size, color, transparent, backgroundColour, audioValue, interactible);
             QSettings settings;
             qDebug() << "Color name: " << color_name;
             settings.setValue("preferences/fontSize", size);
@@ -77,7 +102,7 @@ MainWindow::MainWindow(QWidget *parent)
             settings.setValue("preferences/bValue", bValue);
             settings.setValue("preferences/aValue", aValue);
             settings.setValue("preferences/audioValue", audioValue);
-            settings.setValue("preferences/visibilityShortcut", visibilityShortcut.toString());
+            settings.setValue("preferences/interactible", interactible);
         }
     });
 
@@ -88,18 +113,14 @@ MainWindow::MainWindow(QWidget *parent)
     RGBA backgroundColor(settings.value("preferences/rValue", 0).toInt(), settings.value("preferences/gValue", 0).toInt(), 
     settings.value("preferences/bValue", 0).toInt(), settings.value("preferences/aValue", 80).toInt());
     int audioValue = settings.value("preferences/audioValue", 50).toInt();
-    QKeySequence visibilityShortcut = settings.value("preferences/visibilityShortcut", QKeySequence("Ctrl+i")).value<QKeySequence>();
+    bool interactible = settings.value("preferences/interactible", false).toBool();
 
     m_audioOutput = new QAudioOutput(this);
     m_notificationPlayer = new QMediaPlayer(this);
     m_notificationPlayer->setAudioOutput(m_audioOutput);
     m_notificationPlayer->setSource(QUrl("qrc:/sounds/universfield-message-ping-351298.wav"));
 
-    toggleShortcut = new QShortcut(visibilityShortcut, this);
-    toggleShortcut->setContext(Qt::ApplicationShortcut);
-    connect(toggleShortcut, &QShortcut::activated, this, &MainWindow::toggleInteractive);
-
-    applySettingsChanges(size, color, transparent, backgroundColor, audioValue, visibilityShortcut);
+    applySettingsChanges(size, color, transparent, backgroundColor, audioValue, interactible);
 
     QScreen *screen = QGuiApplication::primaryScreen();
     QRect available = screen->availableGeometry();
@@ -198,7 +219,7 @@ void MainWindow::addMessage(const QString &text) {
     });
 }
 
-void MainWindow::applySettingsChanges(int fontSize, QColor colour, bool transparent, RGBA backgroundColor, int audioValue, QKeySequence visibilityShortcut) {
+void MainWindow::applySettingsChanges(int fontSize, QColor colour, bool transparent, RGBA backgroundColor, int audioValue, bool interactible) {
     QFont font;
     font.setPointSize(fontSize);
 
@@ -223,6 +244,10 @@ void MainWindow::applySettingsChanges(int fontSize, QColor colour, bool transpar
         centralWidget()->setStyleSheet("background: transparent;");
     } else {
         centralWidget()->setStyleSheet("background: rgb(30, 30, 30);");
+    }
+
+    if (interactible != interactive) {
+        toggleInteractive();
     }
 
     m_audioOutput->setVolume(audioValue / 100.0); // 0.0–1.0
