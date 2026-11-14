@@ -1,5 +1,8 @@
 name: Build Installers
 
+permissions:
+  contents: write
+
 on:
   push:
     tags: ["v*"]
@@ -92,3 +95,22 @@ jobs:
             build/*.dmg
             build/*.exe
           if-no-files-found: error
+  release:
+    needs: build
+    if: startsWith(github.ref, 'ref/tags/')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          merge-multiple: true
+      - name: Publish release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            artifacts/*.exe
+            artifacts/*.dmg
+          generate_release_notes: true
+          draft: false
+          prerelease: false
