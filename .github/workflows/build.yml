@@ -66,13 +66,27 @@ jobs:
           curl -L -o "${{ github.workspace }}\vc_redist.x64.exe" https://aka.ms/vs/17/release/vc_redist.x64.exe
           echo "VC_REDIST_PATH=${{ github.workspace }}\vc_redist.x64.exe" >> "$GITHUB_ENV"
 
+      - name: Install Dependencies (macOS)
+        if: runner.os == 'macOS'
+        run: brew install openssl@3 nlohmann-json
+
+      - name: Unshallow vcpkg
+        if: runner.os == 'Windows'
+        run: git -C "$VCPKG_INSTALLATION_ROOT" fetch --unshallow || true
+
       - name: Configure
         run: |
           echo "Using pybind11 dir: $PYBIND11_CMAKE_DIR"
           if [ "$RUNNER_OS" == "Windows" ]; then
-            cmake -B build -S chat-display -DCMAKE_BUILD_TYPE=Release -Dpybind11_DIR="${PYBIND11_CMAKE_DIR}" -DVC_REDIST_INSTALLER="${VC_REDIST_PATH}"
+            cmake -B build -S chat-display -DCMAKE_BUILD_TYPE=Release \
+            -Dpybind11_DIR="${PYBIND11_CMAKE_DIR}" -DVC_REDIST_INSTALLER="${VC_REDIST_PATH}" \
+            -DCMAKE_TOOLCHAIN_FILE="$VCPKG_INSTALLATION_ROOT/scripts/buildsystems/vcpkg.cmake" \
+            -DVCPKG_TARGET_TRIPLET=x64-windows-static-md"
           else
-            cmake -B build -S chat-display -DCMAKE_BUILD_TYPE=Release -Dpybind11_DIR="${PYBIND11_CMAKE_DIR}"
+            cmake -B build -S chat-display -DCMAKE_BUILD_TYPE=Release \
+            -Dpybind11_DIR="${PYBIND11_CMAKE_DIR}" \
+            -DOPENSSL_ROOT_DIR="$(brew --prefix openssl@3)" \
+            -DCMAKE_PREFIX_PATH="$(brew --prefix nlohmann-json)"
           fi
 
       - name: Build
@@ -97,7 +111,7 @@ jobs:
           if-no-files-found: error
   release:
     needs: build
-    if: startsWith(github.ref, 'ref/tags/')
+    if: startsWith(github.ref, 'refs/tags/')
     runs-on: ubuntu-latest
     steps:
       - name: Download all artifacts
