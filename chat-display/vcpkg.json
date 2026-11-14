@@ -1,0 +1,12 @@
+{
+  "name": "chat-display",
+  "version": "1.3.2",
+  "builtin-baseline": "44ccfd88b3eca6929d6d16398c7b19945c29a5f6",
+  "dependencies": [ "openssl", "nlohmann-json" ],
+  "overrides": [
+    {
+      "name": "openssl",
+      "version": "3.6.0"
+    }
+  ]
+}
