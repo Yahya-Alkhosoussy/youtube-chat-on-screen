@@ -1,10 +1,12 @@
 cmake_minimum_required(VERSION 3.19)
-project(chat-display LANGUAGES CXX)
+project(chat-display LANGUAGES CXX VERSION 1.3.2)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_AUTORCC ON)
 
 find_package(Qt6 6.5 REQUIRED COMPONENTS Core Widgets Multimedia)
+find_package(OpenSSL CONFIG REQUIRED)
+find_package(nlohmann_json CONFIG REQUIRED)
 
 qt_standard_project_setup()
 
@@ -71,6 +73,8 @@ qt_add_executable(chat-display
     preferences.ui
     ChatWorker.cpp
     sounds.qrc
+    updateChecker.cpp
+    updateChecker.h
 )
 
 target_link_libraries(chat-display
@@ -79,7 +83,18 @@ target_link_libraries(chat-display
         Qt::Widgets
         Qt::Multimedia
         pybind11::embed
+        nlohmann_json::nlohmann_json
+        OpenSSL::SSL
+        OpenSSL::Crypto
 )
+target_compile_definitions(chat-display PRIVATE CPPHTTPLIB_OPENSSL_SUPPORT)
+target_compile_definitions(chat-display PRIVATE
+    PROJECT_PYTHON_DIR="${CMAKE_CURRENT_SOURCE_DIR}/python")
+
+add_custom_command(TARGET chat-display POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        "${CMAKE_CURRENT_SOURCE_DIR}/cacert.pem"
+        "$<TARGET_FILE_DIR:chat-display>/cacert.pem")
 
 if(APPLE)
     install(CODE "
@@ -113,6 +128,8 @@ elseif(WIN32)
         DESTINATION python/scripts
     )
 endif()
+
+install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/cacert.pem" DESTINATION bin)
 
 qt_generate_deploy_app_script(
     TARGET chat-display
@@ -164,5 +181,7 @@ ExecWait '"$INSTDIR/redist/vc_redist.x64.exe" /install /quiet /norestart'
 endif()
 
 set(CPACK_PACKAGE_NAME "chat-display")
-set(CPACK_PACKAGE_VERSION "1.3.1")
+set(CPACK_PACKAGE_VERSION ${PROJECT_VERSION})
+configure_file(version.h.in ${PROJECT_BINARY_DIR}/version.h)
+target_include_directories(chat-display PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 include(CPack)
