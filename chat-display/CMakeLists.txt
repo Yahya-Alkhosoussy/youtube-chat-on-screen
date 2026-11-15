@@ -87,6 +87,13 @@ target_link_libraries(chat-display
         OpenSSL::SSL
         OpenSSL::Crypto
 )
+
+if(APPLE)
+    target_link_libraries(chat-display PRIVATE
+        "-framework CoreFoundation"
+        "-framework Security")
+endif()
+
 target_compile_definitions(chat-display PRIVATE CPPHTTPLIB_OPENSSL_SUPPORT)
 target_compile_definitions(chat-display PRIVATE
     PROJECT_PYTHON_DIR="${CMAKE_CURRENT_SOURCE_DIR}/python")
