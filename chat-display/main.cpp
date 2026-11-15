@@ -172,11 +172,11 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    //MainWindow w;
-    //w.show();
-    //#ifdef Q_OS_WIN
-    //    w.applyClickThroughNative(false);
-    //#endif
+    MainWindow w;
+    w.show();
+    #ifdef Q_OS_WIN
+        w.applyClickThroughNative(false);
+    #endif
     py::gil_scoped_release release;
 
     checkForNewVersion();
