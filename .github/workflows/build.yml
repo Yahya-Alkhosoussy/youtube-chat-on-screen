@@ -81,7 +81,7 @@ jobs:
             cmake -B build -S chat-display -DCMAKE_BUILD_TYPE=Release \
             -Dpybind11_DIR="${PYBIND11_CMAKE_DIR}" -DVC_REDIST_INSTALLER="${VC_REDIST_PATH}" \
             -DCMAKE_TOOLCHAIN_FILE="$VCPKG_INSTALLATION_ROOT/scripts/buildsystems/vcpkg.cmake" \
-            -DVCPKG_TARGET_TRIPLET=x64-windows-static-md"
+            -DVCPKG_TARGET_TRIPLET=x64-windows-static-md
           else
             cmake -B build -S chat-display -DCMAKE_BUILD_TYPE=Release \
             -Dpybind11_DIR="${PYBIND11_CMAKE_DIR}" \
