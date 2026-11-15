@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.19)
-project(chat-display LANGUAGES CXX VERSION 1.3.2)
+project(chat-display LANGUAGES CXX VERSION 1.3.7)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_AUTORCC ON)
